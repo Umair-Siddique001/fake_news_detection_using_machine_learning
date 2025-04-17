@@ -1,0 +1,17 @@
+asgiref
+Django
+gunicorn
+packaging
+python-dotenv
+sqlparse
+typing_extensions
+whitenoise
+nltk
+sentence-transformers
+scikit-learn
+xgboost
+numpy
+openai
+beautifulsoup4
+pypdf2
+tesseract-ocr

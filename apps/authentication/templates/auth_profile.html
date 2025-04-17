@@ -1,0 +1,528 @@
+{% extends layout_path %}
+
+{% load static %}
+{% load i18n %}
+
+{% block title %}My Profile - FakeGuard{% endblock %}
+
+{% block vendor_css %}
+{{ block.super }}
+<style>
+  body {
+    background-color: #f5f5f9 !important;
+    min-height: 100vh;
+    position: relative;
+    background-image: none !important;
+  }
+
+  .profile-card {
+    background: rgba(255, 255, 255, 0.95);
+    border: none;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+  }
+
+  .profile-header {
+    background: rgba(26, 79, 139, 0.1);
+    padding: 2rem;
+  }
+
+  .profile-nav {
+    background: #fff;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  }
+
+  .profile-nav-link {
+    color: #6c757d;
+    padding: 1rem 1.5rem;
+    text-decoration: none;
+    display: inline-block;
+  }
+
+  .profile-nav-link.active {
+    color: #1a4f8b;
+    border-bottom: 2px solid #1a4f8b;
+  }
+
+  .profile-content {
+    padding: 2rem;
+    backdrop-filter: blur(10px);
+    border: none;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+    transition: all 0.3s ease;
+    border-radius: 1rem;
+    overflow: hidden;
+  }
+
+  .profile-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+  }
+
+  .profile-header {
+    background: linear-gradient(135deg, rgba(26, 79, 139, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%);
+    padding: 3rem 2rem;
+    border-radius: 1rem 1rem 0 0;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .profile-header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-9-21c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM60 91c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM35 41c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM12 60c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z' fill='%231a4f8b' fill-opacity='0.05' fill-rule='evenodd'/%3E%3C/svg%3E");
+    opacity: 0.5;
+  }
+
+  .profile-avatar-container {
+    position: relative;
+    display: inline-block;
+    width: 140px;
+    height: 140px;
+    border-radius: 50%;
+    overflow: visible;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+    border: 4px solid rgba(255, 255, 255, 0.9);
+    transition: all 0.3s ease;
+    margin-bottom: 50px;
+  }
+
+  .profile-avatar {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: all 0.3s ease;
+    border-radius: 50%;
+  }
+
+  .default-avatar {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #696cff 0%, #8592d6 100%);
+    color: white;
+    font-size: 3.5rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    transition: all 0.3s ease;
+    border-radius: 50%;
+  }
+
+  .profile-avatar-actions {
+    position: absolute;
+    bottom: -30px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 12px;
+    z-index: 2;
+  }
+
+  .profile-avatar-overlay,
+  .profile-avatar-remove {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: none;
+    background: #fff;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  }
+
+  .profile-avatar-overlay {
+    color: #696cff;
+  }
+
+  .profile-avatar-remove {
+    color: #f46a6a;
+  }
+
+  .profile-avatar-overlay:hover,
+  .profile-avatar-remove:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+  }
+
+  .profile-avatar-overlay:hover {
+    background: #696cff;
+    color: white;
+  }
+
+  .profile-avatar-remove:hover {
+    background: #f46a6a;
+    color: white;
+  }
+
+  .profile-avatar-overlay i,
+  .profile-avatar-remove i {
+    font-size: 1.25rem;
+  }
+
+  .profile-avatar-container::after {
+    display: none;
+  }
+
+  .profile-avatar-container:hover .profile-avatar {
+    transform: none;
+    filter: none;
+  }
+
+  .profile-info {
+    padding: 2rem;
+    background: white;
+    border-radius: 0 0 1rem 1rem;
+  }
+
+  .info-label {
+    color: #6c757d;
+    font-size: 0.875rem;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+  }
+
+  .info-value {
+    font-size: 1rem;
+    color: #2c2c2c;
+    margin-bottom: 1.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  }
+
+  .edit-btn {
+    padding: 0.4rem 0.75rem;
+    font-size: 0.875rem;
+    color: #1a4f8b;
+    background: rgba(26, 79, 139, 0.1);
+    border: none;
+    border-radius: 0.5rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .edit-btn:hover {
+    background: rgba(26, 79, 139, 0.2);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+
+  .edit-form {
+    display: none;
+    margin-top: 1rem;
+    padding: 1rem;
+    background: rgba(26, 79, 139, 0.05);
+    border-radius: 0.5rem;
+    transition: all 0.3s ease;
+  }
+
+  .edit-form.active {
+    display: block;
+    animation: slideDown 0.3s ease;
+  }
+
+  @keyframes slideDown {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .alert {
+    border: none;
+    border-radius: 10px;
+    padding: 1rem 1.5rem;
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
+    animation: slideIn 0.3s ease;
+  }
+
+  @keyframes slideIn {
+    from { opacity: 0; transform: translateY(-20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .alert-success {
+    background: linear-gradient(135deg, #34c38f 0%, #28a745 100%);
+    color: #fff;
+  }
+
+  .alert-danger {
+    background: linear-gradient(135deg, #f46a6a 0%, #dc3545 100%);
+    color: #fff;
+  }
+
+  .profile-actions {
+    padding: 1.5rem 2rem;
+    background: rgba(26, 79, 139, 0.02);
+    border-top: 1px solid rgba(0, 0, 0, 0.05);
+  }
+
+  .btn-outline-primary {
+    border: 2px solid #1a4f8b;
+    padding: 0.5rem 1.5rem;
+    transition: all 0.3s ease;
+  }
+
+  .btn-outline-primary:hover {
+    background: #1a4f8b;
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(26, 79, 139, 0.2);
+  }
+
+  #photoInput {
+    display: none;
+  }
+
+  .fade-in {
+    animation: fadeIn 0.5s ease-in;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+</style>
+{% endblock vendor_css %}
+
+{% block content %}
+<div class="container-xxl flex-grow-1 container-p-y">
+  <div class="row">
+    <div class="col-md-8 mx-auto">
+      <div class="card profile-card fade-in">
+        <div class="profile-header text-center">
+          <div class="mb-4">
+            <div class="profile-avatar-container">
+              {% if request.user.profile.photo %}
+                <img src="{{ request.user.profile.photo.url }}" alt="{{ request.user.username }}" class="profile-avatar">
+              {% else %}
+                <div class="default-avatar">
+                  {{ request.user.username|make_list|first|upper }}
+                </div>
+              {% endif %}
+              <div class="profile-avatar-actions">
+                <label for="photoInput" class="profile-avatar-overlay" title="Upload new photo">
+                  <i class="bx bx-upload"></i>
+                </label>
+                {% if request.user.profile.photo %}
+                <button type="button" class="profile-avatar-remove" onclick="removeProfilePhoto()" title="Remove photo">
+                  <i class="bx bx-trash"></i>
+                </button>
+                {% endif %}
+              </div>
+            </div>
+            <form id="photoForm" action="{% url 'update-profile' %}" method="POST" enctype="multipart/form-data">
+              {% csrf_token %}
+              <input type="hidden" name="field" value="photo">
+              <input type="file" id="photoInput" name="photo" accept="image/*" style="display: none;" onchange="submitPhotoForm()">
+            </form>
+          </div>
+          <h4 class="mb-1">{{ request.user.username }}</h4>
+          <p class="text-muted mb-0">FakeGuard User</p>
+        </div>
+        
+        <div class="profile-info">
+          {% if messages %}
+            {% for message in messages %}
+              <div class="alert alert-{{ message.tags }} mb-3">
+                {{ message }}
+              </div>
+            {% endfor %}
+          {% endif %}
+
+          <div class="row">
+            <div class="col-12">
+              <h5 class="mb-4">Profile Information</h5>
+              
+              <div class="mb-4">
+                <div class="info-label">Username</div>
+                <div class="info-value">
+                  <span>{{ request.user.username }}</span>
+                  <button type="button" class="edit-btn" onclick="toggleEditForm('username')">
+                    <i class="bx bx-edit-alt"></i> Edit
+                  </button>
+                </div>
+                <div id="username-form" class="edit-form">
+                  <form method="POST" action="{% url 'update-profile' %}" class="mt-3" onsubmit="return validateUsernameForm(event)">
+                    {% csrf_token %}
+                    <input type="hidden" name="field" value="username">
+                    <div class="mb-3">
+                      <input type="text" class="form-control" name="username" id="edit-username"
+                             value="{{ request.user.username }}" required 
+                             minlength="3" maxlength="20"
+                             pattern="^[a-zA-Z0-9_]+$"
+                             title="Username can only contain letters, numbers, and underscores (no spaces)">
+                      <div class="invalid-feedback">Username must be between 3-20 characters and can only contain letters, numbers, and underscores (no spaces)</div>
+                    </div>
+                    <div class="d-flex gap-2">
+                      <button type="submit" class="btn btn-primary btn-sm">Save Changes</button>
+                      <button type="button" class="btn btn-outline-secondary btn-sm" 
+                              onclick="toggleEditForm('username')">Cancel</button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+              
+              <div class="mb-4">
+                <div class="info-label">Email Address</div>
+                <div class="info-value">
+                  <span>{{ request.user.email }}</span>
+                  <button type="button" class="edit-btn" onclick="toggleEditForm('email')">
+                    <i class="bx bx-edit-alt"></i> Edit
+                  </button>
+                </div>
+                <div id="email-form" class="edit-form">
+                  <form method="POST" action="{% url 'update-profile' %}" class="mt-3">
+                    {% csrf_token %}
+                    <input type="hidden" name="field" value="email">
+                    <div class="mb-3">
+                      <input type="email" class="form-control" name="email" 
+                             value="{{ request.user.email }}" required>
+                      <div class="form-text">Enter a valid email address</div>
+                    </div>
+                    <div class="d-flex gap-2">
+                      <button type="submit" class="btn btn-primary btn-sm">Save Changes</button>
+                      <button type="button" class="btn btn-outline-secondary btn-sm" 
+                              onclick="toggleEditForm('email')">Cancel</button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+              
+              <div class="mb-4">
+                <div class="info-label">Date Joined</div>
+                <div class="info-value">{{ request.user.date_joined|date:"F j, Y" }}</div>
+              </div>
+              
+              <div class="mb-4">
+                <div class="info-label">Last Login</div>
+                <div class="info-value">{{ request.user.last_login|date:"F j, Y H:i" }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="profile-actions p-4 border-top">
+          <a href="{% url 'index' %}" class="btn btn-outline-primary">
+            <i class="bx bx-chevron-left me-1"></i> Back to Dashboard
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+function toggleEditForm(field) {
+  const form = document.getElementById(`${field}-form`);
+  form.classList.toggle('active');
+}
+
+// Auto-hide alerts after 5 seconds
+document.addEventListener('DOMContentLoaded', function() {
+  const alerts = document.querySelectorAll('.alert');
+  alerts.forEach(alert => {
+    setTimeout(() => {
+      alert.style.opacity = '0';
+      alert.style.transition = 'opacity 0.5s ease';
+      setTimeout(() => alert.remove(), 500);
+    }, 5000);
+  });
+});
+
+// Handle profile photo upload
+function submitPhotoForm() {
+  const input = document.getElementById('photoInput');
+  if (input.files && input.files[0]) {
+    const file = input.files[0];
+    
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      alert('Please select an image file');
+      return;
+    }
+    
+    // Validate file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      alert('File size must be less than 5MB');
+      return;
+    }
+    
+    // Submit the form
+    document.getElementById('photoForm').submit();
+  }
+}
+
+// Handle profile photo removal
+function removeProfilePhoto() {
+  if (confirm('Are you sure you want to remove your profile photo?')) {
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = "{% url 'update-profile' %}";
+    
+    const csrfInput = document.createElement('input');
+    csrfInput.type = 'hidden';
+    csrfInput.name = 'csrfmiddlewaretoken';
+    csrfInput.value = document.querySelector('[name=csrfmiddlewaretoken]').value;
+    form.appendChild(csrfInput);
+    
+    const fieldInput = document.createElement('input');
+    fieldInput.type = 'hidden';
+    fieldInput.name = 'field';
+    fieldInput.value = 'remove_photo';
+    form.appendChild(fieldInput);
+    
+    document.body.appendChild(form);
+    form.submit();
+  }
+}
+
+function validateUsernameForm(event) {
+  event.preventDefault();
+  const usernameInput = document.getElementById('edit-username');
+  const usernamePattern = /^[a-zA-Z0-9_]+$/;
+  let isValid = true;
+
+  // Reset validation state
+  usernameInput.classList.remove('is-invalid', 'is-valid');
+
+  // Length validation
+  if (!usernameInput.value || usernameInput.value.length < 3 || usernameInput.value.length > 20) {
+    usernameInput.classList.add('is-invalid');
+    isValid = false;
+  }
+
+  // Pattern validation
+  if (!usernamePattern.test(usernameInput.value)) {
+    usernameInput.classList.add('is-invalid');
+    isValid = false;
+  }
+
+  // Check for spaces
+  if (usernameInput.value.includes(' ')) {
+    usernameInput.classList.add('is-invalid');
+    isValid = false;
+  }
+
+  if (isValid) {
+    event.target.submit();
+  }
+
+  return false;
+}
+</script>
+{% endblock content %}

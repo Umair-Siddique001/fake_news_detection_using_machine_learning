@@ -1,0 +1,975 @@
+{% extends layout_path %}
+
+{% load static %}
+{% load i18n %}
+
+{% block title %}FakeGuard - AI Fake News Detection{% endblock %}
+
+{% block vendor_css %}
+{{ block.super }}
+<!-- Add Dropzone CSS -->
+<link rel="stylesheet" href="https://unpkg.com/dropzone@5/dist/min/dropzone.min.css">
+<style>
+  .content-wrapper {
+    background: linear-gradient(180deg, rgba(26, 79, 139, 0.05) 0%, #ffffff 100%);
+  }
+  
+  .analysis-card {
+    background: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(10px);
+    border: none;
+  }
+
+  .input-tab {
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border-bottom: 2px solid transparent;
+  }
+
+  .input-tab.active {
+    border-bottom: 2px solid #1a4f8b;
+    color: #1a4f8b;
+  }
+
+  .input-tab:hover:not(.active) {
+    color: #2d7dd2;
+  }
+
+  .result-badge {
+    padding: 0.5rem 1rem;
+    border-radius: 30px;
+    font-weight: 600;
+    font-size: 0.9rem;
+  }
+
+  .result-badge.real {
+    background: rgba(52, 195, 143, 0.15);
+    color: #34c38f;
+  }
+
+  .result-badge.fake {
+    background: rgba(244, 106, 106, 0.15);
+    color: #f46a6a;
+  }
+
+  .accuracy-meter {
+    height: 8px;
+    border-radius: 4px;
+    background: #e9ecef;
+    overflow: hidden;
+  }
+
+  .accuracy-meter .progress-bar {
+    transition: width 1s ease;
+    background: linear-gradient(90deg, #1a4f8b, #2d7dd2);
+  }
+
+  .dropzone {
+    border: 2px dashed rgba(26, 79, 139, 0.2);
+    border-radius: 15px;
+    background: rgba(26, 79, 139, 0.02);
+    min-height: 280px;
+    padding: 40px 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-bottom: 1.5rem;
+  }
+
+  .dropzone:hover {
+    background: rgba(26, 79, 139, 0.05);
+    border-color: #1a4f8b;
+  }
+
+  .dropzone .dz-message {
+    margin: 0;
+    width: 100%;
+  }
+
+  .dropzone .dz-preview {
+    margin: 1rem auto;
+    width: 90%;
+    padding: 1.5rem;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+    border: 1px solid rgba(26, 79, 139, 0.1);
+    transition: all 0.3s ease;
+  }
+
+  .dropzone .dz-preview:hover {
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+    transform: translateY(-2px);
+  }
+
+  .dropzone .dz-preview .dz-details {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0;
+  }
+
+  .dropzone .dz-preview .dz-filename {
+    font-size: 1rem;
+    font-weight: 500;
+    color: #1a4f8b;
+    margin: 0;
+  }
+
+  .dropzone .dz-preview .dz-size {
+    color: #6c757d;
+    font-size: 0.875rem;
+    margin-top: 0.25rem;
+  }
+
+  .dropzone .dz-preview .dz-progress {
+    height: 6px;
+    background: rgba(26, 79, 139, 0.1);
+    border-radius: 3px;
+    margin: 1rem 0;
+    overflow: hidden;
+  }
+
+  .dropzone .dz-preview .dz-progress .dz-upload {
+    background: linear-gradient(90deg, #1a4f8b, #2d7dd2);
+    height: 100%;
+    transition: width 0.3s ease-in-out;
+  }
+
+  .upload-icon {
+    width: 80px;
+    height: 80px;
+    background: rgba(26, 79, 139, 0.08);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1.5rem;
+    transition: all 0.3s ease;
+  }
+
+  .dropzone:hover .upload-icon {
+    transform: scale(1.1);
+    background: rgba(26, 79, 139, 0.12);
+  }
+
+  .badge {
+    padding: 0.5rem 0.75rem;
+    font-weight: 500;
+  }
+
+  .badge i {
+    font-size: 1rem;
+  }
+
+  .btn-lg {
+    padding: 0.75rem 1.5rem;
+    font-size: 1rem;
+  }
+
+  .btn-lg i {
+    font-size: 1.25rem;
+  }
+
+  .results-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+    margin-top: 2rem;
+  }
+
+  .result-stat-card {
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 15px;
+    padding: 1.5rem;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+    transition: all 0.3s ease;
+  }
+
+  .result-stat-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+  }
+
+  .stat-icon {
+    width: 45px;
+    height: 45px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 1rem;
+  }
+
+  .stat-icon.credibility {
+    background: rgba(52, 195, 143, 0.1);
+    color: #34c38f;
+  }
+
+  .stat-icon.sentiment {
+    background: rgba(26, 79, 139, 0.1);
+    color: #1a4f8b;
+  }
+
+  .stat-icon.sources {
+    background: rgba(244, 106, 106, 0.1);
+    color: #f46a6a;
+  }
+
+  .analysis-timeline {
+    position: relative;
+    padding-left: 2rem;
+    margin-top: 2rem;
+  }
+
+  .timeline-item {
+    position: relative;
+    padding-bottom: 1.5rem;
+  }
+
+  .timeline-item::before {
+    content: '';
+    position: absolute;
+    left: -2rem;
+    top: 0;
+    width: 2px;
+    height: 100%;
+    background: rgba(26, 79, 139, 0.1);
+  }
+
+  .timeline-item::after {
+    content: '';
+    position: absolute;
+    left: -2.3rem;
+    top: 0;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: #1a4f8b;
+  }
+
+  .timeline-item:last-child::before {
+    height: 0;
+  }
+
+  .verification-steps {
+    margin-top: 2rem;
+  }
+
+  .step-item {
+    display: flex;
+    align-items: flex-start;
+    margin-bottom: 1rem;
+    padding: 1rem;
+    border-radius: 10px;
+    background: rgba(26, 79, 139, 0.03);
+    transition: all 0.3s ease;
+  }
+
+  .step-item:hover {
+    background: rgba(26, 79, 139, 0.06);
+  }
+
+  .step-number {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: rgba(26, 79, 139, 0.1);
+    color: #1a4f8b;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    margin-right: 1rem;
+    flex-shrink: 0;
+  }
+
+  .analysis-icon {
+    width: 45px;
+    height: 45px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+    background: rgba(26, 79, 139, 0.1);
+    color: #1a4f8b;
+    margin-right: 1rem;
+  }
+
+  .fade-in {
+    animation: fadeIn 0.5s ease-in;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .icon-spin {
+    animation: spin 1s linear infinite;
+  }
+
+  @keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }
+
+  /* Updated Message Styles */
+  .messages-container {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 9999;
+    width: 100%;
+    max-width: 500px;
+    pointer-events: none;
+  }
+
+  .alert {
+    background: #fff;
+    border-radius: 8px;
+    padding: 1rem 1.5rem;
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    pointer-events: auto;
+    opacity: 0;
+    transform: translateY(-20px);
+    animation: slideDown 0.3s ease forwards;
+  }
+
+  .alert.alert-success {
+    background-color: #34c38f;
+    color: #fff;
+    border-left: 4px solid #2ca67a;
+  }
+
+  .alert.alert-danger {
+    background-color: #f46a6a;
+    color: #fff;
+    border-left: 4px solid #d45959;
+  }
+
+  .alert i {
+    font-size: 1.25rem;
+    margin-right: 0.75rem;
+  }
+
+  .alert .btn-close {
+    padding: 0.5rem;
+    margin: -0.5rem -0.5rem -0.5rem auto;
+    filter: brightness(0) invert(1);
+    opacity: 0.75;
+    transition: opacity 0.2s;
+  }
+
+  .alert .btn-close:hover {
+    opacity: 1;
+  }
+
+  @keyframes slideDown {
+    from {
+      opacity: 0;
+      transform: translateY(-20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes slideUp {
+    from {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    to {
+      opacity: 0;
+      transform: translateY(-20px);
+    }
+  }
+
+  .alert.hiding {
+    animation: slideUp 0.3s ease forwards;
+  }
+
+  .file-icon {
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(26, 79, 139, 0.05);
+    border-radius: 8px;
+  }
+
+</style>
+{% endblock vendor_css %}
+
+{% block content %}
+<div>
+  {% if messages %}
+  <div class="messages-container">
+    {% for message in messages %}
+    <div class="alert alert-{{ message.extra_tags|default:'primary' }} alert-dismissible fade show" role="alert">
+      <div class="d-flex align-items-center">
+        {% if message.extra_tags == 'success' %}
+          <i class="bx bx-check-circle"></i>
+        {% elif message.extra_tags == 'danger' %}
+          <i class="bx bx-error-circle"></i>
+        {% endif %}
+        <span>{{ message }}</span>
+      </div>
+      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <div class="row">
+    <div class="col-12">
+      <div class="card analysis-card mb-4">
+        <div class="card-header border-bottom">
+          <div class="d-flex align-items-center">
+            <div class="analysis-icon">
+              <i class="bx bx-check-shield" style="font-size: 1.5rem;"></i>
+            </div>
+            <div>
+              <h5 class="card-title mb-0">News Analysis</h5>
+              <small class="text-muted">Verify the authenticity of news content</small>
+            </div>
+          </div>
+        </div>
+
+        <div class="card-body">
+          <!-- Input Type Tabs -->
+          <div class="nav nav-pills mb-4 gap-3" role="tablist">
+            <div class="input-tab active px-3 py-2" data-bs-toggle="tab" data-bs-target="#text-input" role="tab">
+              <i class="bx bx-text me-1"></i> Text
+            </div>
+            <div class="input-tab px-3 py-2" data-bs-toggle="tab" data-bs-target="#url-input" role="tab">
+              <i class="bx bx-link me-1"></i> URL
+            </div>
+            <div class="input-tab px-3 py-2" data-bs-toggle="tab" data-bs-target="#file-input" role="tab">
+              <i class="bx bx-file me-1"></i> PDF Document
+            </div>
+          </div>
+
+          <!-- Input Forms -->
+          <div class="tab-content">
+            <!-- Text Input -->
+            <div class="tab-pane fade show active" id="text-input" role="tabpanel">
+              <form id="textForm" onsubmit="return analyzeContent('text')">
+                <div class="mb-3">
+                  <textarea class="form-control" rows="6" placeholder="Paste your news content here..." required></textarea>
+                </div>
+                <div class="analysis-loading"></div>
+                <button type="submit" class="btn btn-primary">
+                  Analyze Text
+                </button>
+              </form>
+            </div>
+
+            <!-- URL Input -->
+            <div class="tab-pane fade" id="url-input" role="tabpanel">
+              <form id="urlForm" onsubmit="return analyzeContent('url')">
+        <div class="mb-3">
+                  <input type="url" class="form-control" placeholder="Enter news article URL..." required>
+                </div>
+                <div class="analysis-loading"></div>
+                <button type="submit" class="btn btn-primary">
+                  Analyze URL
+            </button>
+              </form>
+            </div>
+
+            <!-- File Input -->
+            <div class="tab-pane fade" id="file-input" role="tabpanel">
+              <form id="fileForm" class="dropzone mb-4">
+                {% csrf_token %}
+                <div class="dz-message text-center">
+                  <div class="upload-icon mx-auto">
+                    <i class="bx bxs-cloud-upload" style="font-size: 2.5rem; color: #1a4f8b;"></i>
+                  </div>
+                  <h5 class="mb-3">Drop your PDF file here</h5>
+                  <p class="text-muted mb-2">or click to browse from your computer</p>
+                  <div class="mt-3">
+                    <span class="badge bg-light text-primary me-2">
+                      <i class="bx bxs-file-pdf me-1"></i>PDF only
+                    </span>
+                    <span class="badge bg-light text-primary">
+                      <i class="bx bx-data me-1"></i>Max 10MB
+                    </span>
+                  </div>
+                </div>
+              </form>
+              <div class="text-center">
+                <button type="button" class="btn btn-primary btn-lg d-none" id="analyzeFileBtn" onclick="analyzeContent('file')">
+                  <i class="bx bx-analyse me-2"></i>Analyze Document
+                </button>
+                <button type="button" class="btn btn-outline-danger btn-lg ms-2 d-none" id="removeFileBtn" onclick="removeUploadedFile()">
+                  <i class="bx bx-trash me-2"></i>Remove File
+            </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Results Section (Initially Hidden) -->
+          <div id="resultsSection" class="mt-4 pt-4 border-top d-none fade-in">
+            <h6 class="fw-bold mb-4">Analysis Results</h6>
+            
+            <!-- Main Result Badge -->
+            <div class="d-flex align-items-center mb-4">
+              <span class="result-badge me-3" id="resultBadge">
+                <!-- Will be populated by JS -->
+              </span>
+            </div>
+
+            <!-- Analysis Timeline -->
+            <div class="analysis-timeline">
+                <h6 class="fw-bold mb-3">Key Findings</h6>
+                <div id="findingsTimeline">
+                    <!-- Will be populated by JS -->
+                </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock content %}
+
+{% block vendor_js %}
+{{ block.super }}
+<!-- Add Dropzone JS from CDN -->
+<script src="https://unpkg.com/dropzone@5/dist/min/dropzone.min.js"></script>
+
+<!-- Add custom preview template -->
+<template id="file-preview-template">
+  <div class="dz-preview dz-file-preview">
+    <div class="dz-details">
+      <div class="dz-filename">
+        <span data-dz-name></span>
+        <div class="dz-size mt-1" data-dz-size></div>
+      </div>
+    </div>
+    <div class="dz-progress mt-3"><span class="dz-upload" data-dz-uploadprogress></span></div>
+    <div class="dz-error-message"><span data-dz-errormessage></span></div>
+  </div>
+</template>
+
+<script>
+// Prevent Dropzone from auto-discovering
+Dropzone.autoDiscover = false;
+
+// Initialize Dropzone
+myDropzone = new Dropzone("#fileForm", {
+    url: "{% url 'analyze-file' %}",
+    paramName: "file",
+    maxFiles: 1,
+    maxFilesize: 10,
+    acceptedFiles: ".pdf",
+    addRemoveLinks: true,
+    previewTemplate: document.querySelector('#file-preview-template').innerHTML,
+    headers: {
+        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+    },
+    init: function() {
+        this.on("addedfile", function(file) {
+            document.getElementById('analyzeFileBtn').classList.remove('d-none');
+            document.getElementById('removeFileBtn').classList.remove('d-none');
+        });
+        
+        this.on("removedfile", function(file) {
+            document.getElementById('analyzeFileBtn').classList.add('d-none');
+            document.getElementById('removeFileBtn').classList.add('d-none');
+        });
+        
+        this.on("sending", function(file, xhr, formData) {
+            // Add CSRF token to the form data
+            formData.append('csrfmiddlewaretoken', document.querySelector('[name=csrfmiddlewaretoken]').value);
+        });
+
+        this.on("success", function(file, response) {
+            try {
+                // Convert response to string if it's not already
+                const responseData = typeof response === 'string' ? JSON.parse(response) : response;
+                
+                console.log('Server response:', responseData); // Debug log
+                
+                // Reset the analyze button state
+                const analyzeBtn = document.getElementById('analyzeFileBtn');
+                if (analyzeBtn) {
+                    analyzeBtn.innerHTML = '<i class="bx bx-analyse me-2"></i>Analyze Document';
+                    analyzeBtn.disabled = false;
+                }
+                
+                if (responseData.status === 'success') {
+                    showResults(responseData.data);
+                } else {
+                    throw new Error(responseData.error || 'Error analyzing file');
+                }
+            } catch (error) {
+                console.error('Error parsing response:', error);
+                console.error('Raw response:', response);
+                
+                // Reset the analyze button state
+                const analyzeBtn = document.getElementById('analyzeFileBtn');
+                if (analyzeBtn) {
+                    analyzeBtn.innerHTML = '<i class="bx bx-analyse me-2"></i>Analyze Document';
+                    analyzeBtn.disabled = false;
+                }
+                
+                // Show error message
+                const errorAlert = document.createElement('div');
+                errorAlert.className = 'alert alert-danger alert-dismissible fade show mt-3';
+                errorAlert.innerHTML = `
+                    <div class="d-flex">
+                        <div class="flex-shrink-0">
+                            <i class="bx bx-error-circle fs-4"></i>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <h5 class="alert-heading">Analysis Failed</h5>
+                            <p class="mb-0">There was an error processing your PDF file. Please try again with a different file.</p>
+                            <small class="text-muted">${error.message}</small>
+                        </div>
+                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                `;
+                
+                // Add the error message to the form
+                const fileForm = document.getElementById('fileForm');
+                fileForm.appendChild(errorAlert);
+                
+                // Remove the file from dropzone
+                this.removeFile(file);
+            }
+        });
+
+        this.on("error", function(file, errorMessage) {
+            console.error('Upload error:', errorMessage);
+            
+            // Reset the analyze button state
+            const analyzeBtn = document.getElementById('analyzeFileBtn');
+            if (analyzeBtn) {
+                analyzeBtn.innerHTML = '<i class="bx bx-analyse me-2"></i>Analyze Document';
+                analyzeBtn.disabled = false;
+            }
+            
+            // Handle different types of errors
+            let userMessage = '';
+            if (typeof errorMessage === 'object') {
+                if (errorMessage.error && errorMessage.error.includes('No text could be extracted')) {
+                    userMessage = 'Could not extract text from this PDF. This might be because:\n' +
+                        '• The PDF contains only scanned images\n' +
+                        '• The PDF is password protected\n' +
+                        '• The PDF content is not readable\n\n' +
+                        'Please try uploading a PDF with selectable text.';
+                } else {
+                    userMessage = errorMessage.error || JSON.stringify(errorMessage);
+                }
+            } else if (typeof errorMessage === 'string') {
+                if (errorMessage.includes('File is too big')) {
+                    userMessage = 'The PDF file size exceeds the maximum limit of 10MB. Please upload a smaller file.';
+                } else if (errorMessage.includes('You can\'t upload files of this type')) {
+                    userMessage = 'Please upload only PDF files.';
+                } else {
+                    userMessage = errorMessage;
+                }
+            } else {
+                userMessage = 'An error occurred while processing the PDF. Please try again with a different file.';
+            }
+            
+            // Show error message
+            const errorAlert = document.createElement('div');
+            errorAlert.className = 'alert alert-danger alert-dismissible fade show mt-3';
+            errorAlert.innerHTML = `
+                <div class="d-flex">
+                    <div class="flex-shrink-0">
+                        <i class="bx bx-error-circle fs-4"></i>
+                    </div>
+                    <div class="flex-grow-1 ms-3">
+                        <h5 class="alert-heading">Upload Failed</h5>
+                        <p class="mb-0" style="white-space: pre-line">${userMessage}</p>
+                    </div>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            `;
+            
+            // Add the error message to the form
+            const fileForm = document.getElementById('fileForm');
+            fileForm.appendChild(errorAlert);
+            
+            // Remove the file from dropzone
+            this.removeFile(file);
+        });
+
+        this.on("complete", function(file) {
+            // Reset the analyze button state regardless of success or failure
+            const analyzeBtn = document.getElementById('analyzeFileBtn');
+            if (analyzeBtn) {
+                analyzeBtn.innerHTML = '<i class="bx bx-analyse me-2"></i>Analyze Document';
+                analyzeBtn.disabled = false;
+            }
+        });
+    }
+});
+
+// Function to show analysis results
+function showResults(data) {
+    // Show results section
+    const resultsSection = document.getElementById('resultsSection');
+    resultsSection.classList.remove('d-none');
+    
+    // Create or update text source display
+    let textSourceDisplay = document.getElementById('textSourceDisplay');
+    if (!textSourceDisplay) {
+        textSourceDisplay = document.createElement('div');
+        textSourceDisplay.id = 'textSourceDisplay';
+        textSourceDisplay.className = 'card mb-4';
+        textSourceDisplay.innerHTML = `
+            <div class="card-body p-0">
+            </div>
+        `;
+        resultsSection.insertBefore(textSourceDisplay, resultsSection.firstChild.nextSibling);
+    } else {
+        // Update existing display
+        const sourceContent = textSourceDisplay.querySelector('.source-content');
+        if (sourceContent) {
+            sourceContent.innerHTML = `
+                ${data.file_name ? `
+                    <div class="d-flex align-items-center mb-3 pb-3 border-bottom">
+                        <div class="file-icon me-3 p-2 bg-light rounded">
+                            <i class="bx bxs-file-pdf text-danger" style="font-size: 2rem;"></i>
+                        </div>
+                        <div>
+                            <h6 class="mb-1">${data.file_name}</h6>
+                            <small class="text-muted">PDF Document</small>
+                        </div>
+                    </div>
+                ` : ''}
+                <div class="bg-light rounded p-3" style="font-family: 'Courier New', monospace; font-size: 0.9rem; white-space: pre-wrap; line-height: 1.5;">
+                    ${data.text_source || 'No text content available'}
+                </div>
+            `;
+        }
+    }
+    
+    // Update result badge
+    const resultBadge = document.getElementById('resultBadge');
+    if (data.is_fake) {
+        resultBadge.className = 'result-badge fake';
+        resultBadge.textContent = 'Fake News';
+    } else {
+        resultBadge.className = 'result-badge real';
+        resultBadge.textContent = 'Real News';
+    }
+    
+    // Update key findings
+    const findingsTimeline = document.getElementById('findingsTimeline');
+    findingsTimeline.innerHTML = '';
+    
+    // Add file/url information if available
+    if (data.file_name || data.url_info) {
+        const infoItem = document.createElement('div');
+        infoItem.className = 'timeline-item';
+        if (data.file_name) {
+            infoItem.innerHTML = `
+                <h6 class="mb-2">
+                    <i class="bx bx-file me-1"></i>Document Information
+                </h6>
+                <div class="card bg-light mb-3">
+                    <div class="card-body">
+                        <h6 class="card-title">${data.file_name}</h6>
+                        <p class="card-text text-muted mb-0">
+                            <small>PDF Document Analysis</small>
+                        </p>
+                    </div>
+                </div>
+            `;
+        } else if (data.url_info) {
+            infoItem.innerHTML = `
+                <h6 class="mb-2">
+                    <i class="bx bx-link me-1"></i>Article Information
+                </h6>
+                <div class="card bg-light mb-3">
+                    <div class="card-body">
+                        <h6 class="card-title">${data.url_info.title}</h6>
+                        <p class="card-text text-muted mb-0">
+                            <small>Source: ${data.url_info.domain}</small>
+                        </p>
+                    </div>
+                </div>
+            `;
+        }
+        findingsTimeline.appendChild(infoItem);
+    }
+    
+    // Add ML analysis results
+    const mlAnalysis = document.createElement('div');
+    mlAnalysis.className = 'timeline-item';
+    mlAnalysis.innerHTML = `
+        <h6 class="mb-2">
+            <i class="bx bx-chip me-1"></i>Machine Learning Analysis
+        </h6>
+        <p class="text-muted mb-0">${data.key_points[0]}</p>
+        <p class="text-muted mb-0">${data.key_points[1]}</p>
+    `;
+    findingsTimeline.appendChild(mlAnalysis);
+    
+    // Add LLM analysis section
+    const llmAnalysis = document.createElement('div');
+    llmAnalysis.className = 'timeline-item';
+    if (!data.analysis || data.analysis.includes('unavailable') || data.analysis.includes('Error in analysis')) {
+        llmAnalysis.innerHTML = `
+            <h6 class="mb-2 text-warning">
+                <i class="bx bx-error-circle me-1"></i>LLM Analysis (Unavailable)
+            </h6>
+            <p class="text-muted mb-0">${data.analysis || 'LLM analysis is not available for this document'}</p>
+        `;
+    } else {
+        llmAnalysis.innerHTML = `
+            <h6 class="mb-2">
+                <i class="bx bx-file me-1"></i>Analyze Report
+            </h6>
+            <p class="text-muted mb-0">${data.analysis}</p>
+        `;
+    }
+    findingsTimeline.appendChild(llmAnalysis);
+    
+    // Scroll to results
+    resultsSection.scrollIntoView({ behavior: 'smooth' });
+}
+
+// Function to analyze content
+function analyzeContent(type) {
+    console.log('Analyzing content of type:', type);
+    
+    if (type === 'file' && myDropzone) {
+        if (!myDropzone.files || !myDropzone.files.length) {
+            alert('Please upload a PDF file first');
+            return false;
+        }
+
+        const analyzeBtn = document.getElementById('analyzeFileBtn');
+        analyzeBtn.innerHTML = '<i class="bx bx-loader-alt bx-spin me-1"></i> Analyzing...';
+        analyzeBtn.disabled = true;
+
+        // Process the queue (this will trigger the success handler)
+        myDropzone.processQueue();
+        return false;
+    } else if (type === 'text') {
+        const textForm = document.getElementById('textForm');
+        const textarea = textForm.querySelector('textarea');
+        const text = textarea.value.trim();
+        
+        if (!text) {
+            alert('Please enter some text to analyze');
+            return false;
+        }
+
+        // Show loading state
+        const button = textForm.querySelector('button');
+        button.disabled = true;
+        button.innerHTML = '<i class="bx bx-loader-alt bx-spin me-1"></i> Analyzing...';
+
+        // Make API call to analyze text
+        fetch("{% url 'analyze-text' %}", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            },
+            body: `text=${encodeURIComponent(text)}`
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                showResults(data.data);
+            } else {
+                throw new Error(data.error || 'Error analyzing text');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error analyzing text: ' + error.message);
+        })
+        .finally(() => {
+            // Reset button state
+            button.disabled = false;
+            button.innerHTML = 'Analyze Text';
+        });
+        
+        return false;
+    } else if (type === 'url') {
+        const urlForm = document.getElementById('urlForm');
+        const urlInput = urlForm.querySelector('input');
+        const url = urlInput.value.trim();
+        
+        if (!url) {
+            alert('Please enter a news article URL');
+            return false;
+        }
+
+        // Show loading state
+        const submitBtn = urlForm.querySelector('button');
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="bx bx-loader-alt bx-spin me-1"></i> Analyzing...';
+
+        // Make API call to analyze URL
+        fetch("{% url 'analyze-url' %}", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            },
+            body: `url=${encodeURIComponent(url)}`
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                showResults(data.data);
+            } else {
+                throw new Error(data.error || 'Error analyzing URL');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error analyzing URL: ' + error.message);
+        })
+        .finally(() => {
+            // Reset button state
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = 'Analyze URL';
+        });
+        
+        return false;
+    }
+    return true;
+}
+
+// Function to remove uploaded file
+function removeUploadedFile() {
+    if (myDropzone) {
+        myDropzone.removeAllFiles();
+        const analyzeBtn = document.getElementById('analyzeFileBtn');
+        const removeBtn = document.getElementById('removeFileBtn');
+        if (analyzeBtn) {
+            analyzeBtn.classList.add('d-none');
+            analyzeBtn.innerHTML = '<i class="bx bx-analyse me-2"></i>Analyze Document';
+            analyzeBtn.disabled = false;
+        }
+        if (removeBtn) {
+            removeBtn.classList.add('d-none');
+        }
+    }
+}
+</script>
+{% endblock vendor_js %}

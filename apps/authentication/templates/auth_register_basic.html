@@ -1,0 +1,311 @@
+{% extends layout_path %}
+
+{% load static %}
+{% load i18n %}
+
+{% block title %}Register - FakeGuard{% endblock %}
+
+{% block page_css %}
+{{ block.super }}
+<link rel="stylesheet" href="{% static 'vendor/css/pages/page-auth.css' %}">
+<style>
+  body {
+    background-color: #0c1c3d !important;
+    min-height: 100vh;
+    position: relative;
+    background-image: url('{% static "img/backgrounds/bg.jpg" %}') !important;
+    background-size: cover !important;
+    background-position: center !important;
+    background-repeat: no-repeat !important;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(15px);
+  }
+
+  .auth-wrapper {
+    position: relative;
+    z-index: 1;
+    min-height: 100vh;
+    padding: 40px 0;
+  }
+  
+  .auth-card {
+    background: rgba(255, 255, 255, 0.95);
+    border: none;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+  }
+
+  .auth-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.15);
+  }
+
+  .brand-logo {
+    width: 45px;
+    height: 45px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 12px;
+    background: rgba(26, 79, 139, 0.1);
+    color: #1a4f8b;
+    margin-right: 0.75rem;
+  }
+
+  /* Fix password field focus state */
+  .form-control:focus,
+  .input-group:focus-within .form-control,
+  .input-group:focus-within .input-group-text {
+    border-color: #1a4f8b !important;
+    box-shadow: 0 0 0.25rem rgba(26, 79, 139, 0.25) !important;
+  }
+
+  .input-group-text {
+    transition: all 0.15s ease-in-out;
+  }
+
+  .form-password-toggle .input-group:focus-within .input-group-text {
+    border-color: #1a4f8b !important;
+  }
+
+  /* Footer Styles */
+  .auth-footer {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 80px;
+    padding: 1rem;
+    background: rgba(255, 255, 255, 0.95);
+    text-align: center;
+    border-top: 1px solid rgba(0, 0, 0, 0.05);
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+
+  .auth-footer .footer-links {
+    margin-bottom: 0.5rem;
+  }
+
+  .auth-footer .footer-link {
+    color: #6c757d;
+    text-decoration: none;
+    margin: 0 0.75rem;
+    font-size: 0.9rem;
+    transition: color 0.2s;
+  }
+
+  .auth-footer .footer-link:hover {
+    color: #1a4f8b;
+  }
+
+  .auth-footer .copyright {
+    color: #6c757d;
+    font-size: 0.85rem;
+  }
+
+  /* Make the page scrollable on smaller screens */
+  @media (max-height: 800px) {
+    .auth-wrapper {
+      min-height: calc(100vh);
+      padding: 30px 0;
+    }
+  }
+</style>
+{% endblock page_css %}
+
+{% block content %}
+<div class="container-xxl">
+  <div class="authentication-wrapper authentication-basic container-p-y auth-wrapper">
+    <div class="authentication-inner py-4">
+      <!-- Register Card -->
+      <div class="card auth-card px-4 py-4 fade-in" style="max-width: 400px;">
+        <div class="card-body">
+          <!-- Logo -->
+          <div class="app-brand justify-content-center mb-4">
+            <a href="{% url 'auth-register-basic' %}" class="d-flex align-items-center gap-2 text-decoration-none">
+              <div style="background: rgba(26, 79, 139, 0.1); width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; border-radius: 8px; margin-left: 12px;">
+                <i class="bx bx-check-shield icon-pulse" style="font-size: 24px; color: #1a4f8b;"></i>
+              </div>
+              <span class="app-brand-text text-primary fw-bold fs-3">FakeGuard</span>
+            </a>
+          </div>
+
+          <h4 class="mb-2 text-center">Join the Fight Against Misinformation 🛡️</h4>
+          <p class="mb-4 text-muted text-center">Create your account to start detecting and combating fake news</p>
+
+          {% if messages %}
+            {% for message in messages %}
+              <div class="alert alert-{{ message.extra_tags }} alert-dismissible fade show mb-4" role="alert"
+                   {% if message.extra_tags == 'success' %}style="background-color: #34c759; color: white; border: none; box-shadow: 0 4px 12px rgba(52, 199, 89, 0.2);"{% endif %}>
+                {% if message.extra_tags == 'success' %}
+                  <i class="bx bx-check-circle me-2"></i>
+                {% else %}
+                  <i class="bx bx-error-circle me-2"></i>
+                {% endif %}
+                {{ message }}
+                <button type="button" class="btn-close {% if message.extra_tags == 'success' %}btn-close-white{% endif %}" data-bs-dismiss="alert" aria-label="Close"></button>
+              </div>
+            {% endfor %}
+          {% endif %}
+
+          <form id="formAuthentication" class="mb-4" action="{% url 'auth-register-basic' %}" method="post" onsubmit="return validateForm(event)">
+            {% csrf_token %}
+            <div class="mb-3">
+              <label for="username" class="form-label">Username</label>
+              <input type="text" class="form-control" id="username" name="username" 
+                     placeholder="Enter your username" autofocus required minlength="3" maxlength="20"
+                     pattern="^[a-zA-Z0-9_]+$"
+                     title="Username can only contain letters, numbers, and underscores (no spaces)"
+                     value="{{ form_data.username|default:'' }}">
+              <div class="invalid-feedback">Username must be between 3-20 characters and can only contain letters, numbers, and underscores (no spaces)</div>
+            </div>
+            
+            <div class="mb-3">
+              <label for="email" class="form-label">Email</label>
+              <input type="email" class="form-control" id="email" name="email" 
+                     placeholder="Enter your email" required
+                     value="{{ form_data.email|default:'' }}">
+              <div class="invalid-feedback">Please enter a valid email address</div>
+            </div>
+            
+            <div class="mb-3 form-password-toggle">
+              <label class="form-label" for="password">Password</label>
+              <div class="input-group input-group-merge">
+                <input type="password" id="password" class="form-control" name="password" 
+                       placeholder="············" required>
+                <span class="input-group-text cursor-pointer"><i class="bx bx-hide"></i></span>
+              </div>
+              <div class="invalid-feedback">Please enter a valid password</div>
+            </div>
+
+            <div class="mb-3 form-password-toggle">
+              <label class="form-label" for="confirm_password">Confirm Password</label>
+              <div class="input-group input-group-merge">
+                <input type="password" id="confirm_password" class="form-control" name="confirm_password" 
+                       placeholder="············" required>
+                <span class="input-group-text cursor-pointer"><i class="bx bx-hide"></i></span>
+              </div>
+              <div class="invalid-feedback">Passwords do not match</div>
+            </div>
+
+            <div class="mb-3">
+              <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="terms-conditions" name="terms" required 
+                       {% if form_data.terms %}checked{% endif %}>
+                <label class="form-check-label" for="terms-conditions">
+                  I agree to the
+                  <a href="#" class="text-primary">privacy policy</a> and
+                  <a href="#" class="text-primary">terms of service</a>
+                </label>
+                <div class="invalid-feedback">You must agree to the terms and conditions</div>
+              </div>
+            </div>
+            
+            <button class="btn btn-primary d-grid w-100 py-2" type="submit">
+              Create Account
+            </button>
+          </form>
+
+          <p class="text-center mb-0">
+            <span class="text-muted">Already have an account?</span>
+            <a href="{% url 'auth-login-basic' %}" class="text-primary ms-1">
+              Sign in
+            </a>
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+function validateForm(event) {
+  event.preventDefault();
+  
+  const form = document.getElementById('formAuthentication');
+  const username = document.getElementById('username');
+  const email = document.getElementById('email');
+  const password = document.getElementById('password');
+  const confirmPassword = document.getElementById('confirm_password');
+  const terms = document.getElementById('terms-conditions');
+  
+  // Reset previous validation states
+  form.classList.remove('was-validated');
+  username.classList.remove('is-valid', 'is-invalid');
+  email.classList.remove('is-valid', 'is-invalid');
+  password.classList.remove('is-valid', 'is-invalid');
+  confirmPassword.classList.remove('is-valid', 'is-invalid');
+  terms.classList.remove('is-valid', 'is-invalid');
+  
+  let isValid = true;
+
+  // Username validation
+  const usernamePattern = /^[a-zA-Z0-9_]+$/;
+  if (!username.value || username.value.length < 3 || username.value.length > 20 || !usernamePattern.test(username.value)) {
+    username.classList.add('is-invalid');
+    isValid = false;
+  }
+
+  // Check for spaces in username
+  if (username.value.includes(' ')) {
+    username.classList.add('is-invalid');
+    isValid = false;
+  }
+
+  // Email validation
+  const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!email.value || !emailPattern.test(email.value)) {
+    email.classList.add('is-invalid');
+    isValid = false;
+  }
+
+  // Password validation
+  if (!password.value) {
+    password.classList.add('is-invalid');
+    isValid = false;
+  }
+
+  // Confirm password validation
+  if (!confirmPassword.value || password.value !== confirmPassword.value) {
+    confirmPassword.classList.add('is-invalid');
+    isValid = false;
+  }
+
+  // Terms validation
+  if (!terms.checked) {
+    terms.classList.add('is-invalid');
+    isValid = false;
+  }
+
+  if (isValid) {
+    form.submit();
+  }
+
+  return false;
+}
+
+// Password visibility toggle for both password fields
+document.querySelectorAll('.input-group-text').forEach(function(toggle) {
+  toggle.addEventListener('click', function() {
+    const passwordInput = this.parentElement.querySelector('input');
+    const icon = this.querySelector('i');
+    
+    if (passwordInput.type === 'password') {
+      passwordInput.type = 'text';
+      icon.classList.remove('bx-hide');
+      icon.classList.add('bx-show');
+      
+      // Hide password after 3 seconds
+      setTimeout(() => {
+        passwordInput.type = 'password';
+        icon.classList.remove('bx-show');
+        icon.classList.add('bx-hide');
+      }, 3000);
+    }
+  });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,1250 @@
+{% extends layout_path %}
+
+{% load static %}
+{% load i18n %}
+
+{% block title %}FakeGuard - AI Fake News Detection{% endblock %}
+
+{% block vendor_css %}
+{{ block.super }}
+<link rel="stylesheet" href="{% static 'vendor/css/pages/landing.css' %}">
+<style>
+  /* Modern Glassmorphism Effect */
+  .bg-gradient-custom {
+    background: url('{% static "img/backgrounds/bg.jpg" %}') no-repeat center center fixed;
+    background-size: cover;
+    position: relative;
+    z-index: 1;
+    backdrop-filter: blur(8px);
+    background-color: rgba(240, 242, 245, 0.9);
+  }
+  
+  .bg-gradient-custom::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(180deg, 
+      rgba(240, 242, 245, 0.95) 0%,
+      rgba(240, 242, 245, 0.85) 100%
+    );
+    z-index: -1;
+  }
+
+  .glass-card {
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(12px);
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    position: relative;
+    z-index: 1;
+    overflow: hidden;
+  }
+  
+  .glass-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.3) 0%, rgba(255, 255, 255, 0) 100%);
+    z-index: -1;
+  }
+  
+  .glass-card::after {
+    content: '';
+    position: absolute;
+    bottom: -50%;
+    right: -50%;
+    width: 200px;
+    height: 200px;
+    border-radius: 40%;
+    background: linear-gradient(rgba(66, 153, 225, 0.1), rgba(43, 108, 176, 0.05));
+    opacity: 0;
+    z-index: -1;
+    transition: all 0.5s ease;
+  }
+  
+  .glass-card:hover {
+    transform: translateY(-8px) scale(1.02);
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.12), 0 5px 15px rgba(0, 0, 0, 0.06);
+    border-color: rgba(255, 255, 255, 0.5);
+  }
+  
+  .glass-card:hover::after {
+    opacity: 1;
+    transform: scale(1.5) rotate(25deg);
+  }
+  
+  .nav-blur {
+    background: linear-gradient(to right, #1a4f8b, #2d7dd2);
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    box-shadow: 0 2px 15px rgba(0, 0, 0, 0.1);
+    padding: 1rem 0;
+  }
+
+  .section-padding {
+    padding: 100px 0;
+  }
+
+  .section-title {
+    margin-bottom: 60px;
+  }
+
+  .section-title h2 {
+    position: relative;
+    display: inline-block;
+    margin-bottom: 20px;
+    overflow: hidden;
+  }
+
+  .section-title h2::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    bottom: -10px;
+    width: 100%;
+    height: 3px;
+    background: linear-gradient(90deg, var(--bs-primary), transparent);
+    transform: translateX(-100%);
+    animation: slideIn 1s ease forwards;
+  }
+
+  @keyframes slideIn {
+    to { transform: translateX(0); }
+  }
+
+  .testimonial-card {
+    background: #fff;
+    border-radius: 15px;
+    padding: 30px;
+    margin: 20px 10px;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
+    transition: all 0.3s ease;
+  }
+
+  .testimonial-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+  }
+
+  .client-image {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin-bottom: 20px;
+    border: 3px solid var(--bs-primary);
+  }
+
+  .quote-icon {
+    font-size: 4rem;
+    color: rgba(var(--bs-primary-rgb), 0.1);
+    position: absolute;
+    right: 20px;
+    top: 20px;
+  }
+
+  .fade-in {
+    animation: fadeIn 0.5s ease-in;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .icon-pulse {
+    animation: pulse 2s infinite;
+  }
+
+  @keyframes pulse {
+    0% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.05); opacity: 0.9; }
+    100% { transform: scale(1); opacity: 1; }
+  }
+
+  .footer-link {
+    color: rgba(255, 255, 255, 0.9) !important;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    font-size: 0.95rem;
+    display: inline-block;
+    padding: 4px 0;
+    font-weight: 500;
+    position: relative;
+  }
+
+  .footer-link:hover {
+    color: #ffffff !important;
+    transform: translateX(5px);
+  }
+
+  .footer-link::after {
+    content: '';
+    position: absolute;
+    width: 0;
+    height: 2px;
+    bottom: -2px;
+    left: 0;
+    background-color: #ffffff;
+    transition: width 0.3s ease;
+  }
+
+  .footer-link:hover::after {
+    width: 100%;
+  }
+
+  .social-icon {
+    width: 42px;
+    height: 42px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.1);
+    color: #ffffff !important;
+    transition: all 0.3s ease;
+    font-size: 1.2rem;
+    margin-right: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+  }
+
+  .social-icon:hover {
+    background: #ffffff;
+    color: #1a4f8b !important;
+    transform: translateY(-3px);
+    border-color: #ffffff;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+  }
+
+  .footer-logo {
+    color: #ffffff !important;
+    font-weight: 700;
+    font-size: 1.75rem;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+
+  .footer-logo-icon {
+    color: #ffffff !important;
+    font-size: 1.8rem;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+  }
+
+  .footer-section {
+    background: linear-gradient(to right, #1a4f8b, #2d7dd2);
+    color: #ffffff;
+    position: relative;
+    overflow: hidden;
+    z-index: 1;
+  }
+
+  .footer-text {
+    color: rgba(255, 255, 255, 0.9);
+    line-height: 1.7;
+    margin-bottom: 2rem;
+  }
+
+  .footer-title {
+    color: #ffffff;
+    font-size: 1.1rem;
+    margin-bottom: 1.5rem;
+    position: relative;
+    padding-bottom: 0.5rem;
+    font-weight: 600;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+
+  .footer-title:after {
+    content: '';
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 30px;
+    height: 2px;
+    background: #ffffff;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  }
+
+  .contact-info {
+    display: flex;
+    align-items: center;
+    margin-bottom: 1rem;
+    color: rgba(255, 255, 255, 0.9);
+    transition: all 0.3s ease;
+  }
+
+  .contact-info:hover {
+    color: #ffffff;
+    transform: translateX(5px);
+  }
+
+  .contact-info i {
+    color: #ffffff;
+    margin-right: 10px;
+    font-size: 1.2rem;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+  }
+
+  .footer-bottom {
+    background: rgba(0, 0, 0, 0.2);
+    padding: 1.5rem 0;
+    margin-top: 3rem;
+    position: relative;
+    z-index: 1;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .copyright-text {
+    color: rgba(255, 255, 255, 0.9);
+    margin: 0;
+    font-size: 0.9rem;
+  }
+
+  /* Text Animation Styles */
+  .animate-text {
+    opacity: 0;
+    transform: translateY(20px);
+    animation: fadeInUp 0.8s ease forwards;
+  }
+
+  .animate-text.delay-1 {
+    animation-delay: 0.2s;
+  }
+
+  .animate-text.delay-2 {
+    animation-delay: 0.4s;
+  }
+
+  .animate-text.delay-3 {
+    animation-delay: 0.6s;
+  }
+
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .gradient-text {
+    background: linear-gradient(135deg, #2B6CB0 0%, #4299E1 50%, #2B6CB0 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    background-size: 200% auto;
+    animation: gradientFlow 3s linear infinite;
+  }
+
+  @keyframes gradientFlow {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+  }
+
+  .typing-text {
+    border-right: 3px solid #2D3748;
+    white-space: nowrap;
+    overflow: hidden;
+    animation: typing 3.5s steps(40, end), blink-caret 0.75s step-end infinite;
+  }
+
+  @keyframes typing {
+    from { width: 0 }
+    to { width: 100% }
+  }
+
+  @keyframes blink-caret {
+    from, to { border-color: transparent }
+    50% { border-color: #2D3748 }
+  }
+
+  .highlight-text {
+    position: relative;
+    display: inline-block;
+  }
+
+  .highlight-text::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 100%;
+    height: 30%;
+    background-color: rgba(66, 153, 225, 0.2);
+    z-index: -1;
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.3s ease;
+  }
+
+  .highlight-text:hover::after {
+    transform: scaleX(1);
+  }
+
+  .bounce-text {
+    display: inline-block;
+    animation: bounce 1s ease infinite;
+    animation-delay: calc(var(--char-index) * 0.1s);
+  }
+
+  @keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+  }
+
+  .wave-text {
+    display: inline-flex;
+    overflow: hidden;
+  }
+
+  .wave-text span {
+    display: inline-block;
+    animation: wave 1.5s ease-in-out infinite;
+    animation-delay: calc(var(--char-index) * 0.1s);
+  }
+
+  @keyframes wave {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-15px); }
+  }
+
+  /* Update text colors to match the new design */
+  .hero-title {
+    color: #1A365D;
+    font-weight: 800;
+  }
+
+  .hero-subtitle {
+    color: #4A5568;
+  }
+
+  /* Update the hero section */
+  .hero-section {
+    position: relative;
+    padding: 0;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    overflow: hidden;
+  }
+
+  .hero-section::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;backdrop-filter: blur(2px);
+    -webkit-backdrop-filter: blur(2px);
+  }
+  
+  /* Add floating shapes for a unique modern look */
+  .hero-section::after {
+    content: '';
+    position: absolute;
+    width: 500px;
+    height: 500px;
+    border-radius: 50%;
+    background: linear-gradient(45deg, rgba(43, 108, 176, 0.1), rgba(66, 153, 225, 0.2));
+    top: -150px;
+    right: -150px;
+    z-index: 0;
+    animation: float 15s ease-in-out infinite alternate;
+  }
+  
+  @keyframes float {
+    0% { transform: translate(0, 0) rotate(0deg); }
+    100% { transform: translate(-30px, 30px) rotate(10deg); }
+  }
+  
+  .shape-1, .shape-2, .shape-3 {
+    position: absolute;
+    z-index: 0;
+    opacity: 0.6;
+  }
+  
+  .shape-1 {
+    width: 300px;
+    height: 300px;
+    background: linear-gradient(45deg, rgba(66, 153, 225, 0.15), rgba(43, 108, 176, 0.1));
+    border-radius: 30% 70% 70% 30% / 30% 30% 70% 70%;
+    bottom: -100px;
+    left: -100px;
+    animation: morphing 15s ease-in-out infinite alternate;
+  }
+  
+  .shape-2 {
+    width: 200px;
+    height: 200px;
+    background: linear-gradient(45deg, rgba(66, 153, 225, 0.1), rgba(43, 108, 176, 0.15));
+    border-radius: 30% 70% 70% 30% / 30% 30% 70% 70%;
+    top: 10%;
+    right: 10%;
+    animation: morphing 20s ease-in-out infinite alternate-reverse;
+  }
+  
+  .shape-3 {
+    width: 150px;
+    height: 150px;
+    background: linear-gradient(45deg, rgba(66, 153, 225, 0.1), rgba(43, 108, 176, 0.05));
+    border-radius: 30% 70% 70% 30% / 30% 30% 70% 70%;
+    bottom: 20%;
+    left: 20%;
+    animation: morphing 18s ease-in-out infinite alternate;
+  }
+  
+  @keyframes morphing {
+    0% { border-radius: 30% 70% 70% 30% / 30% 30% 70% 70%; }
+    25% { border-radius: 58% 42% 75% 25% / 76% 46% 54% 24%; }
+    50% { border-radius: 50% 50% 33% 67% / 55% 27% 73% 45%; }
+    75% { border-radius: 33% 67% 58% 42% / 63% 68% 32% 37%; }
+    100% { border-radius: 30% 70% 70% 30% / 30% 30% 70% 70%; }
+  }
+
+  .hero-content {
+    position: relative;
+    z-index: 2;
+  }
+
+  .hero-text {
+    color: #4A5568;
+    font-size: 1.1rem;
+    line-height: 1.8;
+  }
+
+  /* Update button styles */
+  .btn-primary-custom {
+    background: #2B6CB0;
+    border: none;
+    color: white;
+    padding: 12px 32px;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 6px rgba(43, 108, 176, 0.2);
+  }
+
+  .btn-primary-custom:hover {
+    background: #2C5282;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 8px rgba(43, 108, 176, 0.3);
+  }
+
+  .btn-outline-custom {
+    border: 2px solid #2B6CB0;
+    color: #2B6CB0;
+    padding: 12px 32px;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    background: rgba(255, 255, 255, 0.7);
+  }
+
+  .btn-outline-custom:hover {
+    background: #2B6CB0;
+    color: white;
+  }
+
+  .logo-text {
+    color: #ffffff;
+    font-weight: 700;
+    font-size: 1.75rem !important;
+  }
+
+  .logo-icon {
+    color: #ffffff;
+    font-size: 2rem !important;
+  }
+
+  /* Update navigation link styles */
+  .nav-link, 
+  .btn-link {
+    color: rgba(255, 255, 255, 0.9) !important;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    position: relative;
+  }
+
+  .nav-link:hover, 
+  .btn-link:hover {
+    color: #ffffff !important;
+    opacity: 1;
+  }
+
+  .btn-link::after {
+    content: '';
+    position: absolute;
+    width: 0;
+    height: 2px;
+    bottom: -4px;
+    left: 0;
+    background-color: #ffffff;
+    transition: width 0.3s ease;
+  }
+
+  .btn-link:hover::after {
+    width: 100%;
+  }
+
+  /* Update login button style */
+  .btn-outline-primary {
+    color: #ffffff !important;
+    border: 2px solid rgba(255, 255, 255, 0.9) !important;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    padding: 0.5rem 1.5rem;
+    background: transparent;
+  }
+
+  .btn-outline-primary:hover {
+    background-color: #ffffff !important;
+    color: #1a4f8b !important;
+    border-color: #ffffff !important;
+    transform: translateY(-2px);
+  }
+
+  /* Update footer logo to match header */
+  .footer-logo {
+    color: #1a4f8b;
+    font-weight: 700;
+    font-size: 1.75rem;
+  }
+
+  .footer-logo-icon {
+    color: #1a4f8b;
+    font-size: 1.8rem;
+  }
+
+  /* Add a subtle animation to the logo icon */
+  .icon-pulse {
+    animation: pulse 2s infinite;
+  }
+
+  @keyframes pulse {
+    0% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.05); opacity: 0.9; }
+    100% { transform: scale(1); opacity: 1; }
+  }
+
+  /* Add hover effect to the logo */
+  .logo-container {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.3s ease;
+  }
+
+  .logo-container:hover {
+    transform: translateY(-1px);
+  }
+
+  /* Add hover effect to the footer logo */
+  .footer-logo-container {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.3s ease;
+  }
+
+  .footer-logo-container:hover {
+    transform: translateY(-2px);
+  }
+</style>
+{% endblock vendor_css %}
+
+{% block content %}
+<!-- Navigation -->
+<nav class="nav-blur">
+  <div class="container-fluid px-lg-5">
+    <div class="d-flex justify-content-between align-items-center">
+      <a href="/" class="text-decoration-none">
+        <div class="logo-container d-flex align-items-center gap-2">
+          <i class="bx bx-check-shield logo-icon icon-pulse"></i>
+          <span class="logo-text">FakeGuard</span>
+        </div>
+      </a>
+      <div class="d-flex align-items-center gap-4">
+        <a href="#features" class="btn btn-link text-decoration-none">Features</a>
+        <a href="#testimonials" class="btn btn-link text-decoration-none">Testimonials</a>
+        <a href="{% url 'auth-login-basic' %}" class="btn btn-outline-primary">Login</a>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<div class="bg-gradient-custom min-vh-100">
+  <!-- Hero Section -->
+  <section class="hero-section">
+    <!-- Decorative shapes for modern asymmetrical design -->
+    <div class="shape-1"></div>
+    <div class="shape-2"></div>
+    <div class="shape-3"></div>
+    
+    <div class="container-fluid px-lg-5">
+      <div class="row align-items-center">
+        <!-- Left side content with asymmetrical layout -->
+        <div class="col-lg-7 hero-content position-relative">
+          <div class="mb-2 text-primary fw-bold" style="letter-spacing: 2px; text-transform: uppercase; opacity: 0.8">
+            <span class="animate-text delay-1">AI-Powered Truth Verification</span>
+          </div>
+          <h1 class="display-3 fw-bold mb-4 position-relative">
+            <div>
+              <span >Uncover</span>
+              <span >the</span>
+
+            </div>
+            <div class="gradient-text animate-text delay-2" style="font-size: 1.2em; transform: translateY(-5px)">
+              Truth Behind News
+            </div>
+            <div class="animate-text delay-3 d-flex align-items-center">
+              <span class="me-2">with</span>
+              <div class="position-relative d-inline-block">
+                <span class="position-relative" style="z-index: 2">AI-Powered Detection</span>
+                <div class="position-absolute" style="height: 15px; width: 100%; background: rgba(66, 153, 225, 0.3); bottom: 0; left: 0; z-index: 1; border-radius: 10px"></div>
+              </div>
+            </div>
+          </h1>
+          <p class="lead hero-text mb-5 animate-text delay-3" style="max-width: 90%">
+            Verify news articles instantly with our 
+            <span class="highlight-text fw-bold">advanced AI technology</span>. 
+            Stay informed with accurate, reliable information in today's digital world.
+          </p>
+          <div class="d-flex gap-4 animate-text delay-3">
+            <a href="{% url 'auth-login-basic' %}" class="btn btn-primary-custom btn-lg px-5 py-3 shadow-lg position-relative overflow-hidden">
+              <span class="position-relative" style="z-index: 2">Start Verifying</span>
+              <i class="bx bx-right-arrow-alt ms-2 position-relative" style="z-index: 2; --char-index: 0"></i>
+              <div class="position-absolute" style="background: rgba(255,255,255,0.2); height: 100%; width: 50px; top: 0; left: -100px; transform: skewX(-20deg); transition: all 0.6s ease; z-index: 1"></div>
+            </a>
+            <a href="#features" class="btn btn-outline-custom btn-lg px-4 position-relative">
+              <span>Learn More</span>
+              <div class="position-absolute" style="height: 2px; width: 0; background: #2B6CB0; bottom: -2px; left: 0; transition: all 0.3s ease"></div>
+            </a>
+          </div>
+        </div>
+        
+        <!-- Right side with 3D floating elements -->
+        <div class="col-lg-5 d-none d-lg-block position-relative" style="min-height: 500px">
+          <div class="position-absolute" style="width: 300px; height: 300px; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 2">
+            <div class="position-absolute" style="width: 280px; height: 280px; background: rgba(255,255,255,0.7); backdrop-filter: blur(10px); border-radius: 20px; transform: rotate(-5deg); box-shadow: 0 20px 40px rgba(0,0,0,0.1); animation: float 6s ease-in-out infinite; top: 0; left: 0; z-index: 1; border: 1px solid rgba(255,255,255,0.5)">
+              <div class="position-absolute" style="top: 20px; left: 20px; right: 20px; bottom: 20px; background: url('{% static "img/backgrounds/bg.jpg" %}') no-repeat center center; background-size: cover; border-radius: 10px; opacity: 0.8"></div>
+              <div class="position-absolute" style="bottom: 30px; left: 30px; background: rgba(255,255,255,0.9); padding: 10px 20px; border-radius: 10px; box-shadow: 0 5px 15px rgba(0,0,0,0.1)">
+                <div class="d-flex align-items-center">
+                  <i class="bx bx-check-circle text-success me-2" style="font-size: 1.5rem"></i>
+                  <span class="fw-bold">Verified</span>
+                </div>
+              </div>
+            </div>
+            <div class="position-absolute" style="width: 200px; height: 200px; background: rgba(66, 153, 225, 0.1); backdrop-filter: blur(10px); border-radius: 20px; transform: rotate(10deg); box-shadow: 0 15px 35px rgba(0,0,0,0.08); animation: float 8s ease-in-out infinite 1s alternate; top: 100px; left: 150px; z-index: 2; border: 1px solid rgba(255,255,255,0.3)">
+              <div class="position-absolute" style="top: 0; left: 0; right: 0; bottom: 0; display: flex; align-items: center; justify-content: center">
+                <i class="bx bx-shield-quarter text-primary" style="font-size: 5rem; opacity: 0.8"></i>
+              </div>
+            </div>
+            <div class="position-absolute" style="width: 120px; height: 120px; background: rgba(255,255,255,0.8); backdrop-filter: blur(10px); border-radius: 20px; transform: rotate(-8deg); box-shadow: 0 10px 30px rgba(0,0,0,0.06); animation: float 7s ease-in-out infinite 0.5s alternate-reverse; top: -50px; left: 50px; z-index: 3; border: 1px solid rgba(255,255,255,0.5)">
+              <div class="position-absolute" style="top: 0; left: 0; right: 0; bottom: 0; display: flex; align-items: center; justify-content: center">
+                <i class="bx bx-search-alt text-primary" style="font-size: 3rem; opacity: 0.8"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Features Section -->
+  <section id="features" class="section-padding position-relative overflow-hidden">
+    <!-- Background elements for asymmetrical design -->
+    <div class="position-absolute" style="width: 500px; height: 500px; background: linear-gradient(135deg, rgba(66, 153, 225, 0.03), rgba(43, 108, 176, 0.05)); border-radius: 40%; top: -250px; right: -200px; transform: rotate(20deg); z-index: 0"></div>
+    <div class="position-absolute" style="width: 300px; height: 300px; background: linear-gradient(135deg, rgba(66, 153, 225, 0.05), rgba(43, 108, 176, 0.03)); border-radius: 30% 70% 50% 50% / 40% 50% 50% 60%; bottom: -150px; left: -100px; z-index: 0"></div>
+    
+    <div class="container-fluid px-lg-5">
+      <div class="row align-items-center mb-5">
+        <div class="col-lg-6">
+          <div class="section-title">
+            <h2 class="display-6 fw-bold text-primary position-relative d-inline-block">
+              <span class="position-relative" style="z-index: 2">Powerful Features</span>
+              <div class="position-absolute" style="height: 15px; width: 100%; background: rgba(66, 153, 225, 0.2); bottom: 5px; left: 0; z-index: 1; border-radius: 10px"></div>
+            </h2>
+            <p class="text-muted mt-3">Discover what makes our platform stand out from the crowd</p>
+          </div>
+        </div>
+        <div class="col-lg-6 d-none d-lg-block">
+        </div>
+      </div>
+      
+      <div class="row g-4 justify-content-center">
+        <!-- Instant Analysis -->
+        <div class="col-md-6 col-lg-4 fade-in">
+          <div class="glass-card h-100 p-5 rounded-4 position-relative">
+            <!-- Decorative elements -->
+            <div class="position-absolute" style="width: 80px; height: 80px; border: 2px dashed rgba(66, 153, 225, 0.2); border-radius: 50%; top: -10px; right: -10px; z-index: 0"></div>
+            <div class="position-absolute" style="width: 40px; height: 40px; background: rgba(66, 153, 225, 0.05); border-radius: 30% 70% 50% 50% / 40% 50% 50% 60%; bottom: 20px; left: 20px; z-index: 0"></div>
+            
+            <div class="position-relative mb-4 d-inline-block">
+              <div class="p-3 rounded-4" style="background: linear-gradient(135deg, rgba(66, 153, 225, 0.15), rgba(43, 108, 176, 0.1))">
+                <i class="bx bx-analyse text-primary" style="font-size: 3rem;"></i>
+              </div>
+              <div class="position-absolute" style="width: 20px; height: 20px; background: rgba(66, 153, 225, 0.2); border-radius: 50%; top: -5px; right: -5px; z-index: 0"></div>
+            </div>
+            <h4 class="mb-3 fw-bold">Instant Analysis</h4>
+            <p class="text-muted">Get real-time credibility analysis of news articles using our state-of-the-art AI model</p>
+            <div class="mt-4 position-relative d-inline-block">
+              <a href="#" class="text-primary fw-semibold text-decoration-none">Learn more</a>
+              <div class="position-absolute" style="height: 2px; width: 0; background: #2B6CB0; bottom: -2px; left: 0; transition: all 0.3s ease"></div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Fact Checking -->
+        <div class="col-md-6 col-lg-4 fade-in">
+          <div class="glass-card h-100 p-5 rounded-4 position-relative">
+            <!-- Decorative elements -->
+            <div class="position-absolute" style="width: 60px; height: 60px; border: 2px dashed rgba(66, 153, 225, 0.2); border-radius: 50%; top: 20px; right: 20px; z-index: 0"></div>
+            <div class="position-absolute" style="width: 30px; height: 30px; background: rgba(66, 153, 225, 0.05); border-radius: 30% 70% 50% 50% / 40% 50% 50% 60%; bottom: 30px; left: 30px; z-index: 0"></div>
+            
+            <div class="position-relative mb-4 d-inline-block">
+              <div class="p-3 rounded-4" style="background: linear-gradient(135deg, rgba(66, 153, 225, 0.15), rgba(43, 108, 176, 0.1))">
+                <i class="bx bx-check-double text-primary" style="font-size: 3rem;"></i>
+              </div>
+              <div class="position-absolute" style="width: 20px; height: 20px; background: rgba(66, 153, 225, 0.2); border-radius: 50%; top: -5px; right: -5px; z-index: 0"></div>
+            </div>
+            <h4 class="mb-3 fw-bold">Fact Checking</h4>
+            <p class="text-muted">Access detailed fact-checking reports and source verification for comprehensive analysis</p>
+            <div class="mt-4 position-relative d-inline-block">
+              <a href="#" class="text-primary fw-semibold text-decoration-none">Learn more</a>
+              <div class="position-absolute" style="height: 2px; width: 0; background: #2B6CB0; bottom: -2px; left: 0; transition: all 0.3s ease"></div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- News Monitoring -->
+        <div class="col-md-6 col-lg-4 fade-in" style="animation-delay: 0.4s;">
+          <div class="glass-card h-100 p-5 rounded-4 position-relative">
+            <!-- Decorative elements -->
+            <div class="position-absolute" style="width: 70px; height: 70px; border: 2px dashed rgba(66, 153, 225, 0.2); border-radius: 50%; top: -15px; right: 30px; z-index: 0"></div>
+            <div class="position-absolute" style="width: 35px; height: 35px; background: rgba(66, 153, 225, 0.05); border-radius: 30% 70% 50% 50% / 40% 50% 50% 60%; bottom: 25px; left: 25px; z-index: 0"></div>
+            
+            <div class="position-relative mb-4 d-inline-block">
+              <div class="p-3 rounded-4" style="background: linear-gradient(135deg, rgba(66, 153, 225, 0.15), rgba(43, 108, 176, 0.1))">
+                <i class="bx bx-radar text-primary" style="font-size: 3rem;"></i>
+              </div>
+              <div class="position-absolute" style="width: 20px; height: 20px; background: rgba(66, 153, 225, 0.2); border-radius: 50%; top: -5px; right: -5px; z-index: 0"></div>
+            </div>
+            <h4 class="mb-3 fw-bold">News Monitoring</h4>
+            <p class="text-muted">Track and analyze news sources over time with our comprehensive dashboard</p>
+            <div class="mt-4 position-relative d-inline-block">
+              <a href="#" class="text-primary fw-semibold text-decoration-none">Learn more</a>
+              <div class="position-absolute" style="height: 2px; width: 0; background: #2B6CB0; bottom: -2px; left: 0; transition: all 0.3s ease"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+<!-- Testimonials Section -->
+<section id="testimonials" class="section-padding position-relative overflow-hidden">
+  <!-- Background elements for asymmetrical design -->
+  <div class="position-absolute" style="width: 400px; height: 400px; background: linear-gradient(135deg, rgba(66, 153, 225, 0.03), rgba(43, 108, 176, 0.05)); border-radius: 30% 70% 70% 30% / 30% 30% 70% 70%; top: 10%; right: -200px; z-index: 0; animation: morphing 20s ease-in-out infinite alternate-reverse;"></div>
+  <div class="position-absolute" style="width: 300px; height: 300px; background: linear-gradient(135deg, rgba(66, 153, 225, 0.04), rgba(43, 108, 176, 0.02)); border-radius: 30% 70% 70% 30% / 30% 30% 70% 70%; bottom: 10%; left: -150px; z-index: 0; animation: morphing 15s ease-in-out infinite alternate;"></div>
+  
+  <div class="container-fluid px-lg-5">
+    <div class="row align-items-center mb-5">
+      <div class="col-lg-6 offset-lg-3 text-center">
+        <div class="section-title">
+          <h2 class="display-6 fw-bold position-relative d-inline-block">
+            <span class="gradient-text">What Our Users Say</span>
+            <div class="position-absolute" style="height: 8px; width: 70%; background: rgba(66, 153, 225, 0.2); bottom: 5px; left: 15%; z-index: -1; border-radius: 4px"></div>
+          </h2>
+          <p class="text-muted mt-3">Trusted by journalists, researchers, and truth-seekers worldwide</p>
+        </div>
+      </div>
+    </div>
+    
+    <div class="row g-5 justify-content-center">
+      <!-- Testimonial 1 -->
+      <div class="col-md-6 col-lg-4 fade-in">
+        <div class="testimonial-card position-relative" style="border-radius: 20px; border-top: 5px solid #4299E1; transform: rotate(-1deg)">
+          <!-- Decorative elements -->
+          <div class="position-absolute" style="width: 60px; height: 60px; border: 2px dashed rgba(66, 153, 225, 0.3); border-radius: 50%; top: -20px; right: -20px; z-index: 0"></div>
+          
+          <div class="position-relative p-4 pb-5">
+            <div class="position-absolute" style="width: 50px; height: 50px; background: rgba(66, 153, 225, 0.1); border-radius: 12px; transform: rotate(45deg); top: 20px; right: 20px; z-index: 0"></div>
+            
+            <div class="d-flex align-items-center mb-4 position-relative" style="z-index: 2">
+              <div class="position-relative">
+                <img src="{% static 'img/avatars/1.png' %}" alt="Client" class="client-image" style="width: 70px; height: 70px; box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1)">
+                <div class="position-absolute" style="width: 25px; height: 25px; background: #4299E1; border-radius: 50%; bottom: 0; right: 0; display: flex; align-items: center; justify-content: center; border: 2px solid white">
+                  <i class="bx bxs-check-shield text-white" style="font-size: 0.9rem"></i>
+                </div>
+              </div>
+              <div class="ms-3">
+                <h5 class="mb-1 fw-bold">Umair Siddique</h5>
+                <p class="text-primary small mb-0">Investigative Journalist</p>
+              </div>
+            </div>
+            
+            <div class="mb-3 position-relative" style="z-index: 2">
+              <i class="bx bxs-quote-left text-primary me-2" style="font-size: 1.5rem; opacity: 0.7"></i>
+              <p class="mb-0 fst-italic">FakeGuard has revolutionized how I verify sources. The AI analysis is incredibly accurate and saves me hours of manual fact-checking.</p>
+              <i class="bx bxs-quote-right text-primary ms-2" style="font-size: 1.5rem; opacity: 0.7"></i>
+            </div>
+            
+            <div class="position-absolute bottom-0 end-0 p-4">
+              <div class="d-flex">
+                <i class="bx bxs-star text-warning"></i>
+                <i class="bx bxs-star text-warning"></i>
+                <i class="bx bxs-star text-warning"></i>
+                <i class="bx bxs-star text-warning"></i>
+                <i class="bx bxs-star text-warning"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Testimonial 2 -->
+      <div class="col-md-6 col-lg-4 fade-in" style="animation-delay: 0.2s">
+        <div class="testimonial-card position-relative" style="border-radius: 20px; border-top: 5px solid #4299E1; transform: rotate(1deg)">
+          <!-- Decorative elements -->
+          <div class="position-absolute" style="width: 60px; height: 60px; border: 2px dashed rgba(66, 153, 225, 0.3); border-radius: 50%; top: -20px; right: -20px; z-index: 0"></div>
+          
+          <div class="position-relative p-4 pb-5">
+            <div class="position-absolute" style="width: 50px; height: 50px; background: rgba(66, 153, 225, 0.1); border-radius: 12px; transform: rotate(45deg); top: 20px; right: 20px; z-index: 0"></div>
+            
+            <div class="d-flex align-items-center mb-4 position-relative" style="z-index: 2">
+              <div class="position-relative">
+                <img src="{% static 'img/avatars/7.png' %}" alt="Client" class="client-image" style="width: 70px; height: 70px; box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1)">
+                <div class="position-absolute" style="width: 25px; height: 25px; background: #4299E1; border-radius: 50%; bottom: 0; right: 0; display: flex; align-items: center; justify-content: center; border: 2px solid white">
+                  <i class="bx bxs-check-shield text-white" style="font-size: 0.9rem"></i>
+                </div>
+              </div>
+              <div class="ms-3">
+                <h5 class="mb-1 fw-bold">Ali Hassan</h5>
+                <p class="text-primary small mb-0">Research Analyst</p>
+              </div>
+            </div>
+            
+            <div class="mb-3 position-relative" style="z-index: 2">
+              <i class="bx bxs-quote-left text-primary me-2" style="font-size: 1.5rem; opacity: 0.7"></i>
+              <p class="mb-0 fst-italic">The real-time analysis and detailed reports have made my research work much more efficient. A must-have tool for anyone in the field.</p>
+              <i class="bx bxs-quote-right text-primary ms-2" style="font-size: 1.5rem; opacity: 0.7"></i>
+            </div>
+            
+            <div class="position-absolute bottom-0 end-0 p-4">
+              <div class="d-flex">
+                <i class="bx bxs-star text-warning"></i>
+                <i class="bx bxs-star text-warning"></i>
+                <i class="bx bxs-star text-warning"></i>
+                <i class="bx bxs-star text-warning"></i>
+                <i class="bx bxs-star text-warning"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+  <!-- Call to Action -->
+  <section class="section-padding position-relative overflow-hidden">
+    <!-- Background elements for asymmetrical design -->
+    <div class="position-absolute" style="width: 600px; height: 600px; background: linear-gradient(135deg, rgba(66, 153, 225, 0.05), rgba(43, 108, 176, 0.02)); border-radius: 40% 60% 70% 30% / 40% 50% 60% 50%; top: -300px; right: -200px; z-index: 0; transform: rotate(15deg)"></div>
+    <div class="position-absolute" style="width: 400px; height: 400px; background: linear-gradient(135deg, rgba(66, 153, 225, 0.03), rgba(43, 108, 176, 0.05)); border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%; bottom: -200px; left: -100px; z-index: 0; transform: rotate(-20deg)"></div>
+    
+    <div class="container-fluid px-lg-5 position-relative" style="z-index: 1">
+      <div class="row">
+        <div class="col-lg-10 mx-auto">
+          <div class="glass-card p-5 rounded-4 position-relative">
+            <!-- Decorative elements -->
+            <div class="position-absolute" style="width: 150px; height: 150px; border: 3px dashed rgba(66, 153, 225, 0.2); border-radius: 50%; top: -75px; right: -75px; z-index: 0"></div>
+            <div class="position-absolute" style="width: 100px; height: 100px; border: 2px dashed rgba(66, 153, 225, 0.15); border-radius: 50%; bottom: -50px; left: -50px; z-index: 0"></div>
+            
+            <div class="row align-items-center">
+              <div class="col-lg-7 pe-lg-5 mb-5 mb-lg-0">
+                <h2 class="display-5 fw-bold mb-4">
+                  <span class="position-relative">
+                    Ready to 
+                    <span class="gradient-text">fight misinformation</span>?
+                    <div class="position-absolute" style="height: 8px; width: 100%; background: rgba(66, 153, 225, 0.2); bottom: 5px; left: 0; z-index: -1; border-radius: 4px"></div>
+                  </span>
+                </h2>
+                <p class="lead mb-4" style="color: #4A5568">Join thousands of journalists, researchers, and truth-seekers who trust our AI-powered solution for accurate fact-checking.</p>
+                
+                <div class="d-flex flex-wrap gap-3 mt-4">
+                  <a href="{% url 'auth-register-basic' %}" class="btn btn-primary-custom btn-lg px-5 py-3 shadow position-relative overflow-hidden">
+                    <span class="position-relative" style="z-index: 2">Sign Up Now</span>
+                    <i class="bx bx-right-arrow-alt ms-2 position-relative" style="z-index: 2"></i>
+                    <div class="position-absolute" style="background: rgba(255,255,255,0.2); height: 100%; width: 50px; top: 0; left: -100px; transform: skewX(-20deg); transition: all 0.6s ease; z-index: 1"></div>
+                  </a>
+                  <a href="#features" class="btn btn-outline-custom btn-lg px-4 position-relative">
+                    <span>Learn More</span>
+                    <div class="position-absolute" style="height: 2px; width: 0; background: #2B6CB0; bottom: -2px; left: 0; transition: all 0.3s ease"></div>
+                  </a>
+                </div>
+                
+                <div class="d-flex align-items-center mt-5">
+                  <div class="d-flex">
+                    <div class="position-relative" style="width: 40px; height: 40px; margin-right: -10px">
+                      <img src="{% static 'img/avatars/1.png' %}" alt="User" class="rounded-circle border border-2 border-white" style="width: 100%; height: 100%; object-fit: cover">
+                    </div>
+                    <div class="position-relative" style="width: 40px; height: 40px; margin-right: -10px">
+                      <img src="{% static 'img/avatars/5.png' %}" alt="User" class="rounded-circle border border-2 border-white" style="width: 100%; height: 100%; object-fit: cover">
+                    </div>
+                    <div class="position-relative" style="width: 40px; height: 40px; margin-right: -10px">
+                      <img src="{% static 'img/avatars/7.png' %}" alt="User" class="rounded-circle border border-2 border-white" style="width: 100%; height: 100%; object-fit: cover">
+                    </div>
+                    <div class="position-relative" style="width: 40px; height: 40px; margin-right: 10px; background: #4299E1; color: white; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; font-weight: bold" class="rounded-circle border border-2 border-white">
+                      <span>+2k</span>
+                    </div>
+                  </div>
+                  <p class="mb-0 ms-2 text-muted">Trusted by over 2,000 professionals</p>
+                </div>
+              </div>
+              
+              <div class="col-lg-5">
+                <div class="position-relative" style="z-index: 1">
+                  <!-- 3D floating card effect -->
+                  <div class="position-relative" style="transform: perspective(1000px) rotateY(-10deg) rotateX(5deg); transform-style: preserve-3d; transition: all 0.5s ease">
+                    <div class="glass-card p-4 rounded-4 border border-2 border-white" style="background: rgba(255, 255, 255, 0.9); box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1), 0 5px 15px rgba(0, 0, 0, 0.05)">
+                      <div class="d-flex align-items-center mb-4">
+                        <div class="d-inline-block p-3 rounded-circle me-3" style="background: rgba(66, 153, 225, 0.1)">
+                          <i class="bx bx-shield-quarter text-primary" style="font-size: 2rem"></i>
+                        </div>
+                        <div>
+                          <h5 class="mb-1 fw-bold">FakeGuard Pro</h5>
+                          <p class="mb-0 text-muted small">Advanced AI Detection</p>
+                        </div>
+                      </div>
+                      
+                      <div class="mb-4">
+                        <div class="d-flex align-items-center mb-3">
+                          <i class="bx bx-check-circle text-success me-2"></i>
+                          <span>Real-time news verification</span>
+                        </div>
+                        <div class="d-flex align-items-center mb-3">
+                          <i class="bx bx-check-circle text-success me-2"></i>
+                          <span>Source credibility analysis</span>
+                        </div>
+                        <div class="d-flex align-items-center mb-3">
+                          <i class="bx bx-check-circle text-success me-2"></i>
+                          <span>Detailed fact-checking reports</span>
+                        </div>
+                        <div class="d-flex align-items-center">
+                          <i class="bx bx-check-circle text-success me-2"></i>
+                          <span>24/7 monitoring alerts</span>
+                        </div>
+                      </div>
+                      
+                      <a href="{% url 'auth-register-basic' %}" class="btn btn-primary-custom w-100 py-3">
+                        Get Started Free
+                        <i class="bx bx-right-arrow-alt ms-2"></i>
+                      </a>
+                    </div>
+                    
+                    <!-- Decorative elements behind the card -->
+                    <div class="position-absolute" style="width: 100%; height: 100%; background: rgba(66, 153, 225, 0.3); border-radius: 20px; top: 15px; left: 15px; z-index: -1; filter: blur(10px)"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer-section py-5 position-relative overflow-hidden">
+    <!-- Background elements for modern asymmetrical design -->
+    <div class="position-absolute" style="width: 500px; height: 500px; background: rgba(255, 255, 255, 0.03); border-radius: 40% 60% 70% 30% / 40% 50% 60% 50%; top: -250px; right: -150px; z-index: 0; transform: rotate(15deg)"></div>
+    <div class="position-absolute" style="width: 300px; height: 300px; background: rgba(255, 255, 255, 0.02); border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%; bottom: -150px; left: -50px; z-index: 0; transform: rotate(-20deg)"></div>
+    
+    <div class="container-fluid px-lg-5 position-relative" style="z-index: 1">
+      <!-- Footer Top with Custom Wave Divider -->
+      <div class="position-absolute" style="top: -80px; left: 0; right: 0; height: 80px; overflow: hidden">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 100" style="position: absolute; bottom: 0">
+          <path fill="#1a4f8b" fill-opacity="1" d="M0,32L60,42.7C120,53,240,75,360,74.7C480,75,600,53,720,48C840,43,960,53,1080,58.7C1200,64,1320,64,1380,64L1440,64L1440,100L1380,100C1320,100,1200,100,1080,100C960,100,840,100,720,100C600,100,480,100,360,100C240,100,120,100,60,100L0,100Z"></path>
+        </svg>
+      </div>
+      
+      <div class="row g-5 justify-content-between">
+        <!-- Company Info -->
+        <div class="col-lg-4 mb-4 mb-lg-0">
+          <div class="footer-logo-container mb-4 d-inline-flex align-items-center gap-2 position-relative">
+            <div class="position-relative">
+              <i class="bx bx-check-shield footer-logo-icon icon-pulse" style="font-size: 2.5rem; color: #ffffff;"></i>
+              <div class="position-absolute" style="width: 15px; height: 15px; background: #4299E1; border-radius: 50%; top: 0; right: 0; border: 2px solid white"></div>
+            </div>
+            <span class="footer-logo" style="font-size: 2rem; background: linear-gradient(135deg, #ffffff 0%, #e6e6e6 100%); -webkit-background-clip: text; background-clip: text; color: transparent;">FakeGuard</span>
+          </div>
+          <p class="footer-text mb-4" style="line-height: 1.8; font-size: 1rem;">Empowering users with AI technology to detect and combat fake news. Get instant analysis and fact-checking results for a more informed digital world.</p>
+          <div class="d-flex gap-3 mb-4">
+            <a href="javascript:void(0)" class="social-icon" title="Facebook" style="transform: rotate(-5deg)">
+              <i class="bx bxl-facebook"></i>
+            </a>
+            <a href="javascript:void(0)" class="social-icon" title="Twitter" style="transform: rotate(5deg)">
+              <i class="bx bxl-twitter"></i>
+            </a>
+            <a href="javascript:void(0)" class="social-icon" title="Instagram" style="transform: rotate(-3deg)">
+              <i class="bx bxl-instagram"></i>
+            </a>
+            <a href="javascript:void(0)" class="social-icon" title="LinkedIn" style="transform: rotate(3deg)">
+              <i class="bx bxl-linkedin"></i>
+            </a>
+          </div>
+          <div class="glass-card p-3 d-inline-block rounded-4" style="background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.2);">
+            <div class="d-flex align-items-center">
+              <i class="bx bx-badge-check text-white me-2" style="font-size: 1.5rem;"></i>
+              <span style="color: rgba(255, 255, 255, 0.9);">Trusted by 2,000+ professionals</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Quick Links with Modern Styling -->
+        <div class="col-lg-2 col-md-4 mb-4 mb-md-0">
+          <h5 class="footer-title position-relative d-inline-block">
+            Quick Links
+            <div class="position-absolute" style="height: 2px; width: 50%; background: #4299E1; bottom: -5px; left: 0; border-radius: 2px"></div>
+          </h5>
+          <ul class="list-unstyled mb-0 mt-4">
+            <li class="mb-3">
+              <a href="javascript:void(0)" class="footer-link d-flex align-items-center">
+                <i class="bx bx-chevron-right me-2 text-primary"></i>
+                <span>About Us</span>
+              </a>
+            </li>
+            <li class="mb-3">
+              <a href="javascript:void(0)" class="footer-link d-flex align-items-center">
+                <i class="bx bx-chevron-right me-2 text-primary"></i>
+                <span>Features</span>
+              </a>
+            </li>
+            <li class="mb-3">
+              <a href="javascript:void(0)" class="footer-link d-flex align-items-center">
+                <i class="bx bx-chevron-right me-2 text-primary"></i>
+                <span>Pricing</span>
+              </a>
+            </li>
+            <li class="mb-3">
+              <a href="javascript:void(0)" class="footer-link d-flex align-items-center">
+                <i class="bx bx-chevron-right me-2 text-primary"></i>
+                <span>Contact</span>
+              </a>
+            </li>
+          </ul>
+        </div>
+
+        <!-- Support with Modern Styling -->
+        <div class="col-lg-2 col-md-4 mb-4 mb-md-0">
+          <h5 class="footer-title position-relative d-inline-block">
+            Support
+            <div class="position-absolute" style="height: 2px; width: 50%; background: #4299E1; bottom: -5px; left: 0; border-radius: 2px"></div>
+          </h5>
+          <ul class="list-unstyled mb-0 mt-4">
+            <li class="mb-3">
+              <a href="javascript:void(0)" class="footer-link d-flex align-items-center">
+                <i class="bx bx-chevron-right me-2 text-primary"></i>
+                <span>Help Center</span>
+              </a>
+            </li>
+            <li class="mb-3">
+              <a href="javascript:void(0)" class="footer-link d-flex align-items-center">
+                <i class="bx bx-chevron-right me-2 text-primary"></i>
+                <span>Terms of Service</span>
+              </a>
+            </li>
+            <li class="mb-3">
+              <a href="javascript:void(0)" class="footer-link d-flex align-items-center">
+                <i class="bx bx-chevron-right me-2 text-primary"></i>
+                <span>Privacy Policy</span>
+              </a>
+            </li>
+            <li class="mb-3">
+              <a href="javascript:void(0)" class="footer-link d-flex align-items-center">
+                <i class="bx bx-chevron-right me-2 text-primary"></i>
+                <span>FAQ</span>
+              </a>
+            </li>
+          </ul>
+        </div>
+
+        <!-- Contact Info with Modern Styling -->
+        <div class="col-lg-3 col-md-4">
+          <h5 class="footer-title position-relative d-inline-block">
+            Contact Us
+            <div class="position-absolute" style="height: 2px; width: 50%; background: #4299E1; bottom: -5px; left: 0; border-radius: 2px"></div>
+          </h5>
+          <div class="mt-4">
+            <div class="contact-info glass-card p-3 mb-3 rounded-4" style="background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.2);">
+              <i class="bx bx-envelope" style="font-size: 1.5rem;"></i>
+              <span>contact@fakeguard.com</span>
+            </div>
+            <div class="contact-info glass-card p-3 mb-3 rounded-4" style="background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.2);">
+              <i class="bx bx-phone" style="font-size: 1.5rem;"></i>
+              <span>+92 307 5123700</span>
+            </div>
+            <div class="contact-info glass-card p-3 mb-3 rounded-4" style="background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.2);">
+              <i class="bx bx-map" style="font-size: 1.5rem;"></i>
+              <span>Pakistan, Punjab, Burewala</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Footer Bottom with Modern Styling -->
+      <div class="footer-bottom mt-5 pt-4 px-3" style="border-top: 1px solid rgba(255, 255, 255, 0.1);">
+        <div class="row align-items-center justify-content-center text-center">
+          <div class="mb-3 mb-md-0">
+            <p class="copyright-text mb-0">&copy; {% now "Y" %} FakeGuard. All rights reserved.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </footer>
+</div>
+
+<script>
+// Add this script at the end of your content block
+document.addEventListener('DOMContentLoaded', function() {
+  // Function to check if element is in viewport
+  function isInViewport(element) {
+    const rect = element.getBoundingClientRect();
+    return (
+      rect.top >= 0 &&
+      rect.left >= 0 &&
+      rect.bottom <= (window.innerHeight || document.documentElement.clientHeight) &&
+      rect.right <= (window.innerWidth || document.documentElement.clientWidth)
+    );
+  }
+
+  // Add animation when elements come into view
+  function handleScrollAnimation() {
+    document.querySelectorAll('.animate-text').forEach(element => {
+      if (isInViewport(element)) {
+        element.style.opacity = '1';
+        element.style.transform = 'translateY(0)';
+      }
+    });
+  }
+
+  // Initial check
+  handleScrollAnimation();
+
+  // Check on scroll
+  window.addEventListener('scroll', handleScrollAnimation);
+});
+</script>
+{% endblock %}
+
+{% block vendor_js %}
+{{ block.super }}
+<script src="{% static 'vendor/libs/masonry/masonry.js' %}"></script>
+{% endblock vendor_js %}

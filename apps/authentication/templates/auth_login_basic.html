@@ -1,0 +1,259 @@
+{% extends layout_path %}
+
+{% load static %}
+{% load i18n %}
+
+{% block title %}Login - FakeGuard{% endblock %}
+
+{% block page_css %}
+{{ block.super }}
+<link rel="stylesheet" href="{% static 'vendor/css/pages/page-auth.css' %}">
+<style>
+  body {
+    background-color: #0c1c3d !important;
+    min-height: 100vh;
+    position: relative;
+    background-image: url('{% static "img/backgrounds/bg.jpg" %}') !important;
+    background-size: cover !important;
+    background-position: center !important;
+    background-repeat: no-repeat !important;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+  }
+
+  body:before,
+  body:after,
+  .authentication-wrapper:before,
+  .authentication-wrapper:after {
+    display: none !important;
+  }
+
+  .auth-wrapper {
+    position: relative;
+    z-index: 1;
+    min-height: 100vh;
+    padding: 40px 0;
+  }
+  
+  .auth-card {
+    background: rgba(255, 255, 255, 0.95);
+    border: none;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+  }
+
+  .brand-logo {
+    width: 45px;
+    height: 45px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 12px;
+    background: rgba(26, 79, 139, 0.1);
+    color: #1a4f8b;
+    margin-right: 0.75rem;
+  }
+
+  /* Removed animations */
+
+  /* Fix password field focus state */
+  .form-control:focus,
+  .input-group:focus-within .form-control,
+  .input-group:focus-within .input-group-text {
+    border-color: #1a4f8b !important;
+    box-shadow: 0 0 0.25rem rgba(26, 79, 139, 0.25) !important;
+  }
+
+  .input-group-text {
+    transition: all 0.15s ease-in-out;
+  }
+
+  .form-password-toggle .input-group:focus-within .input-group-text {
+    border-color: #1a4f8b !important;
+  }
+
+  /* Footer Styles */
+  .auth-footer {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 80px;
+    padding: 1rem;
+    background: rgba(255, 255, 255, 0.95);
+    text-align: center;
+    border-top: 1px solid rgba(0, 0, 0, 0.05);
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+
+  .auth-footer .footer-links {
+    margin-bottom: 0.5rem;
+  }
+
+  .auth-footer .footer-link {
+    color: #6c757d;
+    text-decoration: none;
+    margin: 0 0.75rem;
+    font-size: 0.9rem;
+    transition: color 0.2s;
+  }
+
+  .auth-footer .footer-link:hover {
+    color: #1a4f8b;
+  }
+
+  .auth-footer .copyright {
+    color: #6c757d;
+    font-size: 0.85rem;
+  }
+
+  /* Make the page scrollable on smaller screens */
+  @media (max-height: 800px) {
+    .auth-wrapper {
+      min-height: calc(100vh);
+      padding: 30px 0;
+    }
+  }
+</style>
+{% endblock page_css %}
+
+{% block content %}
+<div class="container-xxl">
+  <div class="authentication-wrapper authentication-basic container-p-y auth-wrapper">
+    <div class="authentication-inner py-4">
+      <!-- Login -->
+      <div class="card auth-card px-4 py-4" style="max-width: 400px;">
+        <div class="card-body">
+          <!-- Logo -->
+          <div class="app-brand justify-content-center mb-4">
+            <a href="{% url 'auth-login-basic' %}" class="d-flex align-items-center gap-2 text-decoration-none">
+              <div style="background: rgba(26, 79, 139, 0.1); width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; border-radius: 8px; margin-left: 12px;">
+                <i class="bx bx-check-shield" style="font-size: 24px; color: #1a4f8b;"></i>
+              </div>
+              <span class="app-brand-text text-primary fw-bold fs-3">FakeGuard</span>
+            </a>
+          </div>
+
+          <h4 class="mb-2 text-center">Welcome Back! 🛡️</h4>
+          <p class="mb-4 text-center text-muted">Please sign in to access our AI-powered fake news detection tools</p>
+
+          {% if messages %}
+            {% for message in messages %}
+              {% if message.tags == 'success' or message.extra_tags == 'success' %}
+              <div class="alert alert-success alert-dismissible fade show mb-3" style="background-color: #34c759; color: white; border: none; box-shadow: 0 4px 12px rgba(52, 199, 89, 0.2);">
+                  <i class="bx bx-check-circle me-2"></i>
+                  {{ message }}
+                  <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert" aria-label="Close"></button>
+              </div>
+              {% else %}
+              <div class="alert alert-danger alert-dismissible fade show mb-3">
+                  <i class="bx bx-error-circle me-2"></i>
+                  {{ message }}
+                  <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+              </div>
+              {% endif %}
+            {% endfor %}
+          {% endif %}
+
+          <form id="formAuthentication" class="mb-4" method="post" action="{% url 'auth-login-basic' %}" onsubmit="return validateForm(event)">
+            {% csrf_token %}
+            {% if next %}
+            <input type="hidden" name="next" value="{{ next }}">
+            {% endif %}
+            <div class="mb-3">
+              <label for="email" class="form-label">Email or Username</label>
+              <input type="text" class="form-control" id="email" name="email-username" 
+                     placeholder="Enter your email or username" required autofocus>
+              <div class="invalid-feedback">Please enter your email or username</div>
+            </div>
+            
+            <div class="mb-3 form-password-toggle">
+              <label class="form-label" for="password">Password</label>
+              <div class="input-group input-group-merge">
+                <input type="password" id="password" class="form-control" name="password" 
+                       placeholder="············" required>
+                <span class="input-group-text cursor-pointer"><i class="bx bx-hide"></i></span>
+              </div>
+              <div class="invalid-feedback">Please enter your password</div>
+            </div>
+            
+            <div class="mb-3 d-flex justify-content-between align-items-center">
+              <div class="form-check mb-0">
+                <input class="form-check-input" type="checkbox" id="remember-me" name="remember">
+                <label class="form-check-label" for="remember-me">
+                  Remember Me
+                </label>
+              </div>
+              <a href="{% url 'auth-forgot-password-basic' %}" class="text-primary small">
+                Forgot Password?
+              </a>
+            </div>
+            
+            <button class="btn btn-primary d-grid w-100 py-2" type="submit">
+              Sign In
+            </button>
+          </form>
+
+          <p class="text-center mb-0">
+            <span class="text-muted">New to FakeGuard?</span>
+            <a href="{% url 'auth-register-basic' %}" class="text-primary ms-1">
+              Create an account
+            </a>
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+function validateForm(event) {
+  const form = document.getElementById('formAuthentication');
+  const emailUsername = document.getElementById('email');
+  const password = document.getElementById('password');
+  
+  // Reset previous validation states
+  form.classList.remove('was-validated');
+  emailUsername.classList.remove('is-invalid', 'is-valid');
+  password.classList.remove('is-invalid', 'is-valid');
+  let isValid = true;
+
+  // Email/Username validation
+  if (!emailUsername.value.trim()) {
+    emailUsername.classList.add('is-invalid');
+    isValid = false;
+  }
+
+  // Password validation
+  if (!password.value) {
+    password.classList.add('is-invalid');
+    isValid = false;
+  }
+
+  if (!isValid) {
+    event.preventDefault();
+  }
+  return isValid;
+}
+
+// Password visibility toggle
+document.querySelector('.input-group-text').addEventListener('click', function() {
+  const passwordInput = document.getElementById('password');
+  const icon = this.querySelector('i');
+  
+  // Show password
+  passwordInput.type = 'text';
+  icon.classList.remove('bx-hide');
+  icon.classList.add('bx-show');
+  
+  // Hide password after 2 seconds
+  setTimeout(() => {
+    passwordInput.type = 'password';
+    icon.classList.remove('bx-show');
+    icon.classList.add('bx-hide');
+  }, 2000);
+});
+</script>
+{% endblock %}

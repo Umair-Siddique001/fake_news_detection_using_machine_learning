@@ -1,0 +1,161 @@
+{% load i18n %}
+{% load static %}
+
+
+<nav class="layout-navbar {{container_class}} navbar navbar-expand-xl align-items-center bg-navbar-theme" id="layout-navbar">
+  
+  <div class="navbar-nav-right d-flex align-items-center" id="navbar-collapse">
+    <!-- Logo -->
+    <div class="app-brand demo">
+    <a href="{% url 'index' %}" class="app-brand-link">
+      <span class="app-brand-logo demo">
+        <div style="background: rgba(34, 197, 94, 0.1); width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; border-radius: 8px; margin-left: 12px;">
+          <i class="bx bx-check-shield" style="font-size: 24px; color: #1a4f8b;"></i>
+        </div>
+      </span>
+      <span class="app-brand-text demo menu-text fw-bold ms-2" style="color: #1a4f8b;">FakeGuard</span>
+    </a>
+
+    <a href="javascript:void(0);" class="layout-menu-toggle menu-link text-large ms-auto d-block d-xl-none">
+      <i class="bx bx-chevron-left bx-sm"></i>
+    </a>
+  </div>
+    <!-- /Logo -->
+    
+    <ul class="navbar-nav flex-row align-items-center ms-auto">
+      <!-- User -->
+      <li class="nav-item navbar-dropdown dropdown-user dropdown">
+        <a class="nav-link dropdown-toggle hide-arrow p-0" href="javascript:void(0);" data-bs-toggle="dropdown">
+          <div class="avatar avatar-online" style="width: 40px; height: 40px;">
+            {% if request.user.profile.photo %}
+              <img src="{{ request.user.profile.photo.url }}" 
+                   alt="{{ request.user.username }}" 
+                   class="rounded-circle"
+                   style="width: 100%; height: 100%; object-fit: cover;">
+            {% else %}
+              <div class="default-avatar rounded-circle d-flex align-items-center justify-content-center text-white"
+                   style="width: 100%; height: 100%; background-color: #696cff; font-size: 16px; font-weight: 600;">
+                {{ request.user.username|make_list|first|upper }}
+              </div>
+            {% endif %}
+          </div>
+        </a>
+        <ul class="dropdown-menu dropdown-menu-end">
+          <li>
+            <a class="dropdown-item" href="javascript:void(0);">
+              <div class="d-flex">
+                <div class="flex-shrink-0 me-3">
+                  <div class="avatar avatar-online" style="width: 40px; height: 40px;">
+                    {% if request.user.profile.photo %}
+                      <img src="{{ request.user.profile.photo.url }}" 
+                           alt="{{ request.user.username }}" 
+                           class="rounded-circle"
+                           style="width: 100%; height: 100%; object-fit: cover;">
+                    {% else %}
+                      <div class="default-avatar rounded-circle d-flex align-items-center justify-content-center text-white"
+                           style="width: 100%; height: 100%; background-color: #696cff; font-size: 16px; font-weight: 600;">
+                        {{ request.user.username|make_list|first|upper }}
+                      </div>
+                    {% endif %}
+                  </div>
+                </div>
+                <div class="flex-grow-1">
+                  <h6 class="mb-0">{{ request.user.get_full_name|default:request.user.username }}</h6>
+                  <small class="text-muted">@{{ request.user.username }}</small>
+                </div>
+              </div>
+            </a>
+          </li>
+          <li>
+            <div class="dropdown-divider my-1"></div>
+          </li>
+          <li>
+            <a class="dropdown-item" href="{% url 'auth-profile' %}">
+             <i class="bx bx-user bx-md me-3"></i><span>My Profile</span>
+            </a>
+          </li>
+          <li>
+            <a class="dropdown-item" href="{% url 'auth-change-password' %}">
+              <i class="bx bx-lock bx-md me-3"></i><span>Change Password</span>
+            </a>
+          </li>
+          <li>
+            <div class="dropdown-divider my-1"></div>
+          </li>
+          <li>
+            <a class="dropdown-item" href="{% url 'auth-logout' %}">
+              <i class="bx bx-power-off bx-md me-3"></i><span>Log Out</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <!--/ User -->
+    </ul>
+  </div>
+</nav>
+
+<style>
+.avatar.avatar-online {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.avatar.avatar-online::after {
+  content: '';
+  position: absolute;
+  bottom: 5%;
+  right: 5%;
+  width: 25%;
+  height: 25%;
+  border-radius: 50%;
+  background-color: #71dd37;
+  border: 2px solid #fff;
+  z-index: 1;
+}
+
+.default-avatar {
+  background: linear-gradient(45deg, #696cff, #8592d6);
+  box-shadow: 0 2px 6px rgba(105, 108, 255, 0.3);
+  transition: all 0.2s ease;
+}
+
+.default-avatar:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(105, 108, 255, 0.4);
+}
+
+.avatar img {
+  border-radius: 50%;
+  max-width: 100%;
+  height: auto;
+}
+
+.dropdown-menu {
+  min-width: 14rem;
+  padding: 0.5rem 0;
+  box-shadow: 0 5px 25px rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.dropdown-item {
+  padding: 0.75rem 1.25rem;
+  transition: all 0.2s ease;
+}
+
+.dropdown-item:hover {
+  background-color: rgba(105, 108, 255, 0.08);
+}
+
+.dropdown-item i {
+  opacity: 0.7;
+  transition: all 0.2s ease;
+}
+
+.dropdown-item:hover i {
+  opacity: 1;
+  transform: translateX(2px);
+}
+</style>
