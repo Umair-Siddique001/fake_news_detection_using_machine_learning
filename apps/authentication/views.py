@@ -1,4 +1,4 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import login, authenticate, logout, update_session_auth_hash
 from django.contrib.auth.models import User
 from django.views.generic import TemplateView
@@ -408,3 +408,28 @@ def update_profile(request):
         return redirect('auth-profile')
         
     return redirect('auth-profile')
+
+@login_required
+def view_history(request):
+    print(f"View history requested by user: {request.user.username}")  # Debug print
+    view_history_entries = request.user.view_history.all()
+    print(f"Found {view_history_entries.count()} history entries")  # Debug print
+    
+    context = {
+        "layout_path": TemplateHelper.set_layout("layout_vertical.html", {}),
+        "view_history": view_history_entries
+    }
+    return render(request, 'auth_view_history.html', context)
+
+@login_required
+def clear_history(request):
+    if request.method == 'POST':
+        request.user.view_history.all().delete()
+        return redirect('view-history')
+
+@login_required
+def delete_history(request, entry_id):
+    if request.method == 'POST':
+        entry = get_object_or_404(request.user.view_history, id=entry_id)
+        entry.delete()
+        return redirect('view-history')

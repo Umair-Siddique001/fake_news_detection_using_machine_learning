@@ -4,6 +4,7 @@ from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_protect
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
+from apps.authentication.models import ViewHistory
 import pickle
 import re
 import nltk
@@ -317,6 +318,15 @@ def analyze_pdf(request):
 
                             # Add file information
                             final_analysis['file_name'] = uploaded_file.name
+
+                            # Create view history entry
+                            ViewHistory.objects.create(
+                                user=request.user,
+                                content_type='file',
+                                content=uploaded_file.name,
+                                result=not is_fake,  # True for real news, False for fake news
+                                confidence=final_confidence
+                            )
                             
                             return JsonResponse({
                                 'status': 'success',
@@ -366,9 +376,10 @@ def analyze_pdf(request):
 
 def analyze_with_llama(text):
     try:
+        api_key = os.getenv('OPEN_ROUTER_API_KEY')
         client = OpenAI(
             base_url="https://openrouter.ai/api/v1",
-            api_key=os.getenv('OPEN_ROUTER_API_KEY'),
+            api_key=api_key,
         )
 
         prompt = f"""Analyze the following news content and determine if it's likely to be fake or real news. 
@@ -388,8 +399,9 @@ def analyze_with_llama(text):
                 extra_headers={
                     "HTTP-Referer": os.getenv('BASE_URL'),
                     "X-Title": "FakeGuard",
+                    "Authorization": f"Bearer {api_key}" 
                 },
-                model="nvidia/llama-3.1-nemotron-nano-8b-v1:free",
+                model="qwen/qwen3-30b-a3b:free",
                 messages=[
                     {
                         "role": "user",
@@ -430,7 +442,7 @@ def analyze_with_llama(text):
             else:
                 raise e
     except Exception as e:
-        print(f"Error in Llama model analysis: {str(e)}")
+        print(f"Error in open router request analysis: {str(e)}")
         return {
             "is_fake": False,
             "confidence": 0.5,
@@ -547,6 +559,15 @@ def analyze_text(request):
 
             # Combine both analyses
             final_analysis = combine_analysis_results(text_analysis, llama_analysis)
+
+            # Create view history entry
+            ViewHistory.objects.create(
+                user=request.user,
+                content_type='text',
+                content=text[:1000],  # Store first 1000 characters
+                result=not is_fake,  # True for real news, False for fake news
+                confidence=final_confidence
+            )
 
             return JsonResponse({
                 'status': 'success',
@@ -689,6 +710,15 @@ def analyze_url(request):
                 'title': url_content['title'],
                 'domain': url_content['domain']
             }
+
+            # Create view history entry
+            ViewHistory.objects.create(
+                user=request.user,
+                content_type='url',
+                content=url,
+                result=not is_fake,  # True for real news, False for fake news
+                confidence=final_confidence
+            )
 
             return JsonResponse({
                 'status': 'success',

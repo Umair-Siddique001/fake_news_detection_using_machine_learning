@@ -14,4 +14,4 @@ numpy
 openai
 beautifulsoup4
 pypdf2
-tesseract-ocr
+pytesseract
