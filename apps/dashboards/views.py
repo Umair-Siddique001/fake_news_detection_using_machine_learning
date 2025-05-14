@@ -9,7 +9,6 @@ import pickle
 import re
 import nltk
 import os
-import torch
 import xgboost as xgb
 from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize
@@ -318,14 +317,14 @@ def analyze_pdf(request):
 
                             # Add file information
                             final_analysis['file_name'] = uploaded_file.name
-
+                            result = not final_analysis['is_fake']
                             # Create view history entry
                             ViewHistory.objects.create(
                                 user=request.user,
                                 content_type='file',
                                 content=uploaded_file.name,
-                                result=not is_fake,  # True for real news, False for fake news
-                                confidence=final_confidence
+                                result=result,  # True for real news, False for fake news
+                                confidence=confidence_score
                             )
                             
                             return JsonResponse({
@@ -544,7 +543,7 @@ def analyze_text(request):
             # Determine if it's fake or real
             is_fake = final_prediction < 0.5
             confidence_score = int(final_confidence * 100)
-
+            print(f"Debug - final_prediction: {final_prediction}")
             # Generate initial analysis
             text_analysis = {
                 'accuracy': confidence_score,
@@ -556,17 +555,16 @@ def analyze_text(request):
 
             # Get Llama model analysis
             llama_analysis = analyze_with_llama(text)
-
             # Combine both analyses
             final_analysis = combine_analysis_results(text_analysis, llama_analysis)
-
+            result = not final_analysis['is_fake']
             # Create view history entry
             ViewHistory.objects.create(
                 user=request.user,
                 content_type='text',
                 content=text[:1000],  # Store first 1000 characters
-                result=not is_fake,  # True for real news, False for fake news
-                confidence=final_confidence
+                result=result,  # True for real news, False for fake news
+                confidence=confidence_score
             )
 
             return JsonResponse({
@@ -710,14 +708,14 @@ def analyze_url(request):
                 'title': url_content['title'],
                 'domain': url_content['domain']
             }
-
+            result = not final_analysis['is_fake']
             # Create view history entry
             ViewHistory.objects.create(
                 user=request.user,
                 content_type='url',
                 content=url,
-                result=not is_fake,  # True for real news, False for fake news
-                confidence=final_confidence
+                result=result,
+                confidence=confidence_score
             )
 
             return JsonResponse({

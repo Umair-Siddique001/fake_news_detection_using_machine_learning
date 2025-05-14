@@ -411,9 +411,7 @@ def update_profile(request):
 
 @login_required
 def view_history(request):
-    print(f"View history requested by user: {request.user.username}")  # Debug print
     view_history_entries = request.user.view_history.all()
-    print(f"Found {view_history_entries.count()} history entries")  # Debug print
     
     context = {
         "layout_path": TemplateHelper.set_layout("layout_vertical.html", {}),
